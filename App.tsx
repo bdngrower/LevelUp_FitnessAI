@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { HashRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { Layout } from './components/Layout';
 import { Login } from './pages/Login';
@@ -11,38 +11,59 @@ import { Progress } from './pages/Progress';
 import { Profile } from './pages/Profile';
 import { SettingsPage } from './pages/Settings';
 import { StorageService } from './services/storage';
+import { DbService } from './services/db';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const isAuth = StorageService.isAuthenticated();
-  if (!isAuth) {
-    return <Navigate to="/login" replace />;
-  }
-  return <>{children}</>;
+    const { session, loading } = useAuth();
+
+    if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">Carregando...</div>;
+
+    if (!session) {
+        return <Navigate to="/login" replace />;
+    }
+    return <>{children}</>;
 };
 
 const ProfileCheck = ({ children }: { children: React.ReactNode }) => {
-    const profile = StorageService.getProfile();
-    if (!profile) {
-        return <Navigate to="/onboarding" replace />;
-    }
-    return <>{children}</>;
+    const [loading, setLoading] = useState(true);
+    const [authorized, setAuthorized] = useState(false);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const check = async () => {
+            const profile = await DbService.getProfile();
+            if (!profile) {
+                navigate('/onboarding', { replace: true });
+            } else {
+                setAuthorized(true);
+            }
+            setLoading(false);
+        };
+        check();
+    }, [navigate]);
+
+    if (loading) return <div className="min-h-screen flex items-center justify-center bg-background text-foreground">Verificando perfil...</div>;
+
+    return authorized ? <>{children}</> : null;
 };
 
 // AnimatedRoutes wrapper to handle AnimatePresence with useLocation
 const AnimatedRoutes = () => {
     const location = useLocation();
-    
+
     return (
         <AnimatePresence mode="wait">
+            {/* @ts-ignore - Key is required for AnimatePresence to work with Routes */}
             <Routes location={location} key={location.pathname}>
                 <Route path="/login" element={<Login />} />
-                
+
                 <Route path="/onboarding" element={
                     <ProtectedRoute>
                         <Onboarding />
                     </ProtectedRoute>
                 } />
-                
+
                 <Route path="/" element={
                     <ProtectedRoute>
                         <ProfileCheck>
@@ -50,15 +71,15 @@ const AnimatedRoutes = () => {
                         </ProfileCheck>
                     </ProtectedRoute>
                 } />
-                
+
                 <Route path="/plan" element={
                     <ProtectedRoute>
                         <ProfileCheck>
-                             <WorkoutPlan />
+                            <WorkoutPlan />
                         </ProfileCheck>
                     </ProtectedRoute>
                 } />
-                
+
                 <Route path="/workout/:dayIndex" element={
                     <ProtectedRoute>
                         <ProfileCheck>
@@ -66,7 +87,7 @@ const AnimatedRoutes = () => {
                         </ProfileCheck>
                     </ProtectedRoute>
                 } />
-                
+
                 <Route path="/progress" element={
                     <ProtectedRoute>
                         <ProfileCheck>
@@ -99,19 +120,21 @@ const AnimatedRoutes = () => {
 };
 
 const App: React.FC = () => {
-  useEffect(() => {
-      // Initialize theme preference
-      const settings = StorageService.getSettings();
-      StorageService.saveSettings(settings);
-  }, []);
+    useEffect(() => {
+        // Initialize theme preference
+        const settings = StorageService.getSettings();
+        StorageService.saveSettings(settings);
+    }, []);
 
-  return (
-    <HashRouter>
-      <Layout>
-        <AnimatedRoutes />
-      </Layout>
-    </HashRouter>
-  );
+    return (
+        <HashRouter>
+            <AuthProvider>
+                <Layout>
+                    <AnimatedRoutes />
+                </Layout>
+            </AuthProvider>
+        </HashRouter>
+    );
 };
 
 export default App;

@@ -99,3 +99,11 @@ export interface WeightLog {
   weight: number;
   waist?: number;
 }
+
+export interface HistoryItem {
+  id: string;
+  type: 'workout' | 'weight' | 'plan' | 'system';
+  title: string;
+  date: string;
+  description?: string;
+}
