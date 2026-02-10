@@ -31,7 +31,7 @@ export const Landing: React.FC = () => {
       <header className="fixed top-0 w-full z-50 border-b border-white/5 bg-background/60 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 font-bold text-xl tracking-tight">
-            <Logo className="h-9 w-auto" />
+            <Logo className="h-12 w-auto" />
             <span>LevelUp<span className="text-primary">.AI</span></span>
           </Link>
           <div className="flex items-center gap-4">

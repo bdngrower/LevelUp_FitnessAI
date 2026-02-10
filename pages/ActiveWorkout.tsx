@@ -297,25 +297,6 @@ export const ActiveWorkout: React.FC = () => {
         </div>
 
 
-        {/* Exercise Video */}
-        {!videoError && (
-          <div className="w-full mb-6 rounded-xl overflow-hidden shadow-lg border border-border bg-black relative aspect-video group">
-            <video
-              key={currentExercise.name} // Force reload on change
-              src={`/videos/${currentExercise.name.replace(/ /g, '_')}.mp4`}
-              className="w-full h-full object-contain" // Changed to object-contain to prevent cropping
-              loop
-              muted
-              playsInline
-              autoPlay
-              onError={() => setVideoError(true)}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-4 pointer-events-none">
-              <span className="text-white text-xs font-medium bg-black/50 px-3 py-1 rounded-full backdrop-blur-sm">Tocando em Loop</span>
-            </div>
-          </div>
-        )}
-
         {/* Technical Details Toggle */}
         <div className="w-full mb-6">
           <button
@@ -380,6 +361,30 @@ export const ActiveWorkout: React.FC = () => {
             )}
           </AnimatePresence>
         </div>
+
+        {/* Exercise Video Card */}
+        {!videoError && (
+          <div className="w-full mb-6 bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+            <div className="p-4 border-b border-border flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Play className="w-4 h-4 text-primary fill-current" />
+                <span className="font-bold text-sm">Demonstração</span>
+              </div>
+            </div>
+            <div className="relative aspect-video bg-black">
+              <video
+                key={currentExercise.name} // Force reload on change
+                src={`/videos/${currentExercise.name.replace(/ /g, '_')}.mp4`}
+                className="w-full h-full object-contain"
+                loop
+                muted
+                playsInline
+                autoPlay
+                onError={() => setVideoError(true)}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Inputs */}
         <div className="w-full bg-card rounded-2xl p-6 shadow-sm border border-border mb-6">
