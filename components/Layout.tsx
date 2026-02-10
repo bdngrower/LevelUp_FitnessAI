@@ -10,10 +10,13 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const location = useLocation();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { session } = useAuth();
+  const { session, loading } = useAuth();
 
   // Hide Navigation on specific flows
   const hideNav = location.pathname === '/' || location.pathname === '/onboarding' || location.pathname.startsWith('/workout/');
+
+  if (loading) return <div className="h-screen w-screen bg-background" />; // Or a spinner
+
   const isAuth = !!session;
 
   const user = StorageService.getProfile();
