@@ -255,8 +255,13 @@ export const ActiveWorkout: React.FC = () => {
     >
       {/* Top Bar */}
       <div className="h-14 bg-card flex items-center justify-between px-4 border-b border-border shrink-0 z-10 shadow-sm relative">
-        <button onClick={() => navigate('/')} className="text-sm font-medium text-muted-foreground hover:text-destructive transition-colors">Sair</button>
-        <div className="font-bold text-foreground truncate max-w-[200px] text-sm absolute left-1/2 -translate-x-1/2">{day.focus}</div>
+        <div className="flex items-center gap-4">
+          <button onClick={() => navigate('/plan')} className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors flex items-center gap-1">
+            <ChevronRight className="w-4 h-4 rotate-180" /> Voltar
+          </button>
+        </div>
+
+        <div className="font-bold text-foreground truncate max-w-[150px] text-sm absolute left-1/2 -translate-x-1/2">{day.focus}</div>
 
         {/* Small Top Timer Status */}
         <div className={`text-sm font-mono font-bold px-3 py-1 rounded-full transition-all ${isTimerRunning ? (isTimerFinished ? 'bg-green-500 text-white animate-pulse' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400') : 'bg-secondary text-muted-foreground'}`}>
@@ -298,14 +303,14 @@ export const ActiveWorkout: React.FC = () => {
             <video
               key={currentExercise.name} // Force reload on change
               src={`/videos/${currentExercise.name.replace(/ /g, '_')}.mp4`}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain" // Changed to object-contain to prevent cropping
               loop
               muted
               playsInline
               autoPlay
               onError={() => setVideoError(true)}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-4">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-4 pointer-events-none">
               <span className="text-white text-xs font-medium bg-black/50 px-3 py-1 rounded-full backdrop-blur-sm">Tocando em Loop</span>
             </div>
           </div>

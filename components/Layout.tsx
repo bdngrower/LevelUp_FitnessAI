@@ -73,7 +73,10 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       {!hideNav && (
         <aside className="hidden lg:flex flex-col w-64 border-r border-border bg-card/50 backdrop-blur-xl p-4 shrink-0">
           <div className="px-2 mb-8 mt-2">
-            <Logo className="h-10 w-auto" />
+            <div className="flex items-center gap-3">
+              <Logo className="h-8 w-auto" />
+              <span className="font-bold text-lg tracking-tight">LevelUp<span className="text-primary">.AI</span></span>
+            </div>
           </div>
 
           <div className="space-y-1.5 flex-1">
@@ -102,8 +105,9 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         {/* Desktop/Tablet Header */}
         {!hideNav && (
           <header className="h-16 border-b border-border bg-background/80 backdrop-blur-md flex items-center justify-between px-4 lg:px-8 shrink-0 z-20">
-            <div className="lg:hidden">
+            <div className="lg:hidden flex items-center gap-2">
               <Logo className="h-8 w-auto" />
+              <span className="font-bold text-lg tracking-tight">LevelUp<span className="text-primary">.AI</span></span>
             </div>
 
             {/* Breadcrumbs / Page Title Placeholder */}
