@@ -37,6 +37,7 @@ export const ActiveWorkout: React.FC = () => {
   const [exerciseDetails, setExerciseDetails] = useState<ExerciseDefinition | undefined>(undefined);
   const [suggestion, setSuggestion] = useState<string>("");
   const [showDetails, setShowDetails] = useState(false);
+  const [videoError, setVideoError] = useState(false);
 
   // Load Profile & Plan
   useEffect(() => {
@@ -107,6 +108,7 @@ export const ActiveWorkout: React.FC = () => {
       const ex = day.exercises[currentExerciseIndex];
       const details = getExerciseDetails(ex.name);
       setExerciseDetails(details);
+      setVideoError(false); // Reset video error for new exercise
 
       // Parse target reps (e.g., "10-12" -> 10)
       const targetReps = parseInt(ex.reps.split('-')[0]) || 10;
@@ -288,6 +290,26 @@ export const ActiveWorkout: React.FC = () => {
             </div>
           )}
         </div>
+
+
+        {/* Exercise Video */}
+        {!videoError && (
+          <div className="w-full mb-6 rounded-xl overflow-hidden shadow-lg border border-border bg-black relative aspect-video group">
+            <video
+              key={currentExercise.name} // Force reload on change
+              src={`/videos/${currentExercise.name.replace(/ /g, '_')}.mp4`}
+              className="w-full h-full object-cover"
+              loop
+              muted
+              playsInline
+              autoPlay
+              onError={() => setVideoError(true)}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-4">
+              <span className="text-white text-xs font-medium bg-black/50 px-3 py-1 rounded-full backdrop-blur-sm">Tocando em Loop</span>
+            </div>
+          </div>
+        )}
 
         {/* Technical Details Toggle */}
         <div className="w-full mb-6">
