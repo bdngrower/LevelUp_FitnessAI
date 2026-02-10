@@ -10,6 +10,7 @@ import { ActiveWorkout } from './pages/ActiveWorkout';
 import { Progress } from './pages/Progress';
 import { Profile } from './pages/Profile';
 import { SettingsPage } from './pages/Settings';
+import { Landing } from './pages/Landing';
 import { StorageService } from './services/storage';
 import { DbService } from './services/db';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -65,6 +66,10 @@ const AnimatedRoutes = () => {
                 } />
 
                 <Route path="/" element={
+                    <Landing />
+                } />
+
+                <Route path="/dashboard" element={
                     <ProtectedRoute>
                         <ProfileCheck>
                             <Dashboard />
