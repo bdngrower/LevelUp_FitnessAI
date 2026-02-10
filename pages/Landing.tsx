@@ -7,7 +7,7 @@ import { Dumbbell, TrendingUp, Calendar, ArrowRight, CheckCircle2, Star } from '
 // I'll stick to the ones available or generic SVGs if needed.
 
 const FeatureCard = ({ icon: Icon, title, description, delay }: { icon: any, title: string, description: string, delay: number }) => (
-  <motion.div 
+  <motion.div
     initial={{ opacity: 0, y: 20 }}
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true }}
@@ -25,16 +25,16 @@ const FeatureCard = ({ icon: Icon, title, description, delay }: { icon: any, tit
 export const Landing: React.FC = () => {
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden selection:bg-primary/30">
-      
+
       {/* Navbar */}
       <header className="fixed top-0 w-full z-50 border-b border-white/5 bg-background/60 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2 font-bold text-xl tracking-tight">
+          <Link to="/" className="flex items-center gap-2 font-bold text-xl tracking-tight">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
               <Dumbbell className="w-5 h-5 fill-current" />
             </div>
             LevelUp<span className="text-primary">.AI</span>
-          </div>
+          </Link>
           <div className="flex items-center gap-4">
             <Link to="/login" className="text-sm font-medium hover:text-primary transition-colors">
               Login
@@ -50,7 +50,7 @@ export const Landing: React.FC = () => {
       <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 px-4 overflow-hidden">
         {/* Background Gradients */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-primary/20 blur-[120px] rounded-full opacity-50 pointer-events-none" />
-        
+
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -69,7 +69,7 @@ export const Landing: React.FC = () => {
             <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
               Planos de treino personalizados instantaneamente por IA, adaptados ao seu corpo, objetivos e rotina. Evolua a cada dia.
             </p>
-            
+
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link to="/onboarding" className="w-full sm:w-auto px-8 py-4 bg-primary text-primary-foreground rounded-full font-bold text-lg hover:bg-primary/90 transition-all shadow-xl shadow-primary/25 flex items-center justify-center gap-2 group">
                 Gerar Meu Plano
@@ -106,19 +106,19 @@ export const Landing: React.FC = () => {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            <FeatureCard 
+            <FeatureCard
               icon={Calendar}
               title="Planejamento Semanal"
               description="Receba uma rotina completa de exercícios distribuída perfeitamente para sua disponibilidade."
               delay={0.1}
             />
-            <FeatureCard 
+            <FeatureCard
               icon={Dumbbell}
               title="Exercícios Adaptativos"
               description="Ajuste cargas, séries e repetições com base no seu feedback diário e progresso."
               delay={0.2}
             />
-            <FeatureCard 
+            <FeatureCard
               icon={TrendingUp}
               title="Análise de Progresso"
               description="Visualizações claras de seus ganhos de força, perda de peso e consistência ao longo do tempo."
@@ -132,7 +132,7 @@ export const Landing: React.FC = () => {
       <section className="py-24 px-4">
         <div className="max-w-5xl mx-auto bg-card border border-border rounded-3xl p-8 md:p-16 text-center relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2" />
-          
+
           <div className="relative z-10">
             <h2 className="text-3xl md:text-5xl font-bold mb-6">Pronto para o próximo nível?</h2>
             <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">

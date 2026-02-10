@@ -31,14 +31,14 @@ export const Profile: React.FC = () => {
             await supabase.auth.signOut();
             StorageService.clearAll();
             StorageService.logout();
-            navigate('/login');
+            navigate('/');
         }
     };
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
         StorageService.logout();
-        navigate('/login');
+        navigate('/');
     }
 
     if (!profile) return null;
