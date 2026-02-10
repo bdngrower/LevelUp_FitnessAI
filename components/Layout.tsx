@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
-import { Dumbbell, TrendingUp, Calendar, UserIcon, Settings, Search, Menu, HistoryIcon } from './Icons';
+import { Dumbbell, TrendingUp, Calendar, UserIcon, Settings, Search, Menu, HistoryIcon, LogOut } from './Icons';
 import { Logo } from './Logo';
 import { cn } from '../utils/cn';
 import { StorageService } from '../services/storage';
@@ -10,7 +10,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const location = useLocation();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { session, loading } = useAuth();
+  const { session, loading, signOut } = useAuth();
 
   // Hide Navigation on specific flows
   const hideNav = location.pathname === '/' || location.pathname === '/onboarding' || location.pathname.startsWith('/workout/');
@@ -85,6 +85,14 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
             <div className="text-xs font-bold text-muted-foreground px-3 mb-2 mt-6 uppercase tracking-wider">Conta</div>
             {navItems.slice(3).map(item => <NavItem key={item.to} {...item} />)}
+
+            <button
+              onClick={() => signOut()}
+              className="w-full flex items-center gap-3 px-3 py-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors mt-2"
+            >
+              <LogOut className="w-5 h-5" />
+              <span className="font-medium">Sair da Conta</span>
+            </button>
           </div>
 
           <div className="mt-auto bg-secondary/50 dark:bg-white/5 p-3 rounded-xl flex items-center gap-3 border border-border">
