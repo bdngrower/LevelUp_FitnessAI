@@ -5,6 +5,7 @@ import { Dumbbell, TrendingUp, Calendar, ArrowRight, CheckCircle2, Star } from '
 // Checking Icons.tsx content might be good, but I'll assume standard lucide exports for now or use the ones I saw in Layout.tsx
 // Layout import: import { Dumbbell, TrendingUp, Calendar, UserIcon, Settings, Search, Menu, HistoryIcon } from './Icons';
 // I'll stick to the ones available or generic SVGs if needed.
+import { useAuth } from '../contexts/AuthContext';
 
 const FeatureCard = ({ icon: Icon, title, description, delay }: { icon: any, title: string, description: string, delay: number }) => (
   <motion.div
@@ -23,6 +24,8 @@ const FeatureCard = ({ icon: Icon, title, description, delay }: { icon: any, tit
 );
 
 export const Landing: React.FC = () => {
+  const { session } = useAuth();
+
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden selection:bg-primary/30">
 
@@ -36,12 +39,20 @@ export const Landing: React.FC = () => {
             LevelUp<span className="text-primary">.AI</span>
           </Link>
           <div className="flex items-center gap-4">
-            <Link to="/login" className="text-sm font-medium hover:text-primary transition-colors">
-              Login
-            </Link>
-            <Link to="/login" className="hidden sm:flex bg-primary text-primary-foreground px-5 py-2 rounded-full text-sm font-semibold hover:bg-primary/90 transition-transform active:scale-95 shadow-lg shadow-primary/20">
-              Começar Agora
-            </Link>
+            {session ? (
+              <Link to="/dashboard" className="hidden sm:flex bg-primary text-primary-foreground px-5 py-2 rounded-full text-sm font-semibold hover:bg-primary/90 transition-transform active:scale-95 shadow-lg shadow-primary/20">
+                Ir para Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link to="/login" className="text-sm font-medium hover:text-primary transition-colors">
+                  Login
+                </Link>
+                <Link to="/login" className="hidden sm:flex bg-primary text-primary-foreground px-5 py-2 rounded-full text-sm font-semibold hover:bg-primary/90 transition-transform active:scale-95 shadow-lg shadow-primary/20">
+                  Começar Agora
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>

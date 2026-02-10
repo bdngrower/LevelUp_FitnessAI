@@ -52,7 +52,7 @@ export const Login: React.FC = () => {
                     .single();
 
                 if (profile) {
-                    navigate('/');
+                    navigate('/dashboard');
                 } else {
                     navigate('/onboarding');
                 }
