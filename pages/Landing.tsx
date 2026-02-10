@@ -1,10 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Dumbbell, TrendingUp, Calendar, ArrowRight, CheckCircle2, Star } from '../components/Icons'; // Assuming these icons exist or I'll use lucide-react ones if available in Icons.tsx. 
-// Checking Icons.tsx content might be good, but I'll assume standard lucide exports for now or use the ones I saw in Layout.tsx
-// Layout import: import { Dumbbell, TrendingUp, Calendar, UserIcon, Settings, Search, Menu, HistoryIcon } from './Icons';
-// I'll stick to the ones available or generic SVGs if needed.
+import { Dumbbell, TrendingUp, Calendar, ArrowRight, CheckCircle2, Star } from '../components/Icons';
+import { Logo } from '../components/Logo';
 import { useAuth } from '../contexts/AuthContext';
 
 const FeatureCard = ({ icon: Icon, title, description, delay }: { icon: any, title: string, description: string, delay: number }) => (
@@ -33,10 +31,7 @@ export const Landing: React.FC = () => {
       <header className="fixed top-0 w-full z-50 border-b border-white/5 bg-background/60 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 font-bold text-xl tracking-tight">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
-              <Dumbbell className="w-5 h-5 fill-current" />
-            </div>
-            LevelUp<span className="text-primary">.AI</span>
+            <Logo className="h-8 w-auto" />
           </Link>
           <div className="flex items-center gap-4">
             {session ? (

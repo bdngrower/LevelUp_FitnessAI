@@ -73,7 +73,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       {!hideNav && (
         <aside className="hidden lg:flex flex-col w-64 border-r border-border bg-card/50 backdrop-blur-xl p-4 shrink-0">
           <div className="px-2 mb-8 mt-2">
-            <Logo className="h-10 w-auto" showText={true} />
+            <Logo className="h-10 w-auto" />
           </div>
 
           <div className="space-y-1.5 flex-1">
@@ -103,7 +103,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         {!hideNav && (
           <header className="h-16 border-b border-border bg-background/80 backdrop-blur-md flex items-center justify-between px-4 lg:px-8 shrink-0 z-20">
             <div className="lg:hidden">
-              <Logo className="h-8 w-auto" showText={true} />
+              <Logo className="h-8 w-auto" />
             </div>
 
             {/* Breadcrumbs / Page Title Placeholder */}
