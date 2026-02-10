@@ -5,6 +5,7 @@ import { Logo } from './Logo';
 import { cn } from '../utils/cn';
 import { StorageService } from '../services/storage';
 import { useAuth } from '../contexts/AuthContext';
+import { LoadingScreen } from './LoadingScreen';
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
@@ -13,16 +14,16 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const { session, loading, signOut } = useAuth();
 
   // Hide Navigation on specific flows
-  const hideNav = location.pathname === '/' || location.pathname === '/onboarding' || location.pathname.startsWith('/workout/');
+  const hideNav = location.pathname === '/' || location.pathname === '/login' || location.pathname === '/onboarding' || location.pathname.startsWith('/workout/');
 
-  if (loading) return <div className="h-screen w-screen bg-background" />; // Or a spinner
+  if (loading) return <LoadingScreen />;
 
   const isAuth = !!session;
 
   const user = StorageService.getProfile();
 
   const navItems = [
-    { to: "/", icon: Dumbbell, label: "Início" },
+    { to: "/dashboard", icon: Dumbbell, label: "Início" },
     { to: "/plan", icon: Calendar, label: "Plano" },
     { to: "/progress", icon: TrendingUp, label: "Progresso" },
     { to: "/profile", icon: UserIcon, label: "Perfil" },
@@ -85,25 +86,15 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
             <div className="text-xs font-bold text-muted-foreground px-3 mb-2 mt-6 uppercase tracking-wider">Conta</div>
             {navItems.slice(3).map(item => <NavItem key={item.to} {...item} />)}
-
-            <button
-              onClick={() => signOut()}
-              className="w-full flex items-center gap-3 px-3 py-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors mt-2"
-            >
-              <LogOut className="w-5 h-5" />
-              <span className="font-medium">Sair da Conta</span>
-            </button>
           </div>
 
-          <div className="mt-auto bg-secondary/50 dark:bg-white/5 p-3 rounded-xl flex items-center gap-3 border border-border">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-primary to-green-400 flex items-center justify-center text-white font-bold text-xs border-2 border-background">
-              {user?.name?.[0] || "U"}
-            </div>
-            <div className="flex flex-col overflow-hidden">
-              <span className="text-sm font-bold truncate">{user?.name || "Usuário"}</span>
-              <span className="text-xs text-muted-foreground truncate">Nível {user?.experience === 'beginner' ? 'I' : user?.experience === 'intermediate' ? 'II' : 'III'}</span>
-            </div>
-          </div>
+          <button
+            onClick={() => signOut()}
+            className="mt-auto w-full flex items-center gap-3 px-3 py-2.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl transition-colors border border-transparent hover:border-destructive/20"
+          >
+            <LogOut className="w-5 h-5" />
+            <span className="text-sm font-medium">Sair da Conta</span>
+          </button>
         </aside>
       )}
 

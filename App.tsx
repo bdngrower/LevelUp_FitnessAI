@@ -14,11 +14,12 @@ import { Landing } from './pages/Landing';
 import { StorageService } from './services/storage';
 import { DbService } from './services/db';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { LoadingScreen } from './components/LoadingScreen';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     const { session, loading } = useAuth();
 
-    if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">Carregando...</div>;
+    if (loading) return <LoadingScreen />;
 
     if (!session) {
         return <Navigate to="/login" replace />;
@@ -44,9 +45,17 @@ const ProfileCheck = ({ children }: { children: React.ReactNode }) => {
         check();
     }, [navigate]);
 
-    if (loading) return <div className="min-h-screen flex items-center justify-center bg-background text-foreground">Verificando perfil...</div>;
+    if (loading) return <LoadingScreen />;
 
     return authorized ? <>{children}</> : null;
+};
+
+// Home route: shows Landing for unauthenticated, redirects to Dashboard for authenticated
+const HomeRoute = () => {
+    const { session, loading } = useAuth();
+    if (loading) return <LoadingScreen />;
+    if (session) return <Navigate to="/dashboard" replace />;
+    return <Landing />;
 };
 
 // AnimatedRoutes wrapper to handle AnimatePresence with useLocation
@@ -66,7 +75,7 @@ const AnimatedRoutes = () => {
                 } />
 
                 <Route path="/" element={
-                    <Landing />
+                    <HomeRoute />
                 } />
 
                 <Route path="/dashboard" element={
