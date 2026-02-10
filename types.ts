@@ -16,6 +16,7 @@ export interface UserProfile {
   goal: 'weight_loss'; // Fixed
   equipment: 'full_gym'; // Fixed
   waistSize?: number; // cm, optional
+  avatarUrl?: string; // profile photo URL
 }
 
 export interface ExerciseDefinition {

@@ -25,6 +25,7 @@ export const DbService = {
             goal: data.goal as any,
             equipment: data.equipment as any,
             waistSize: data.waist_size || undefined,
+            avatarUrl: data.avatar_url || undefined,
         };
     },
 
@@ -47,6 +48,7 @@ export const DbService = {
             goal: profile.goal,
             equipment: profile.equipment,
             waist_size: profile.waistSize,
+            avatar_url: profile.avatarUrl,
             updated_at: new Date().toISOString()
         });
 

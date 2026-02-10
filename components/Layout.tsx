@@ -30,7 +30,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     { to: "/settings", icon: Settings, label: "Config" },
   ];
 
-  const NavItem = ({ to, icon: Icon, label, mobile = false }: { to: string, icon: any, label: string, mobile?: boolean }) => {
+  const NavItem = ({ to, icon: Icon, label, mobile = false, ...rest }: { to: string, icon: any, label: string, mobile?: boolean, [key: string]: any }) => {
     const isActive = location.pathname === to;
 
     if (mobile) {

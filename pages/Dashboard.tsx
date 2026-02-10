@@ -178,12 +178,26 @@ export const Dashboard: React.FC = () => {
                             onClick={() => navigate(`/workout/${nextDayIndex}`)}
                             className="cursor-pointer group relative h-[320px] rounded-3xl overflow-hidden shadow-xl shadow-primary/10"
                         >
-                            {/* Gradient Background */}
-                            <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-slate-800 to-slate-900 z-0"></div>
-                            <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent z-0 mix-blend-overlay"></div>
+                            {/* Video Background */}
+                            {nextWorkout?.exercises?.[0]?.name && (
+                                <video
+                                    key={nextWorkout.exercises[0].name}
+                                    src={`/videos/${nextWorkout.exercises[0].name.replace(/ /g, '_')}.mp4`}
+                                    className="absolute inset-0 w-full h-full object-cover z-0"
+                                    loop
+                                    muted
+                                    playsInline
+                                    autoPlay
+                                    onError={(e) => { (e.target as HTMLVideoElement).style.display = 'none'; }}
+                                />
+                            )}
+
+                            {/* Gradient overlay for readability */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-gray-900/90 via-slate-800/80 to-slate-900/90 z-[1]"></div>
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-[1]"></div>
 
                             {/* Decorative Icon */}
-                            <div className="absolute -right-10 -bottom-10 z-0 opacity-10">
+                            <div className="absolute -right-10 -bottom-10 z-[1] opacity-10">
                                 <Dumbbell className="w-64 h-64 text-white rotate-[-15deg]" />
                             </div>
 
