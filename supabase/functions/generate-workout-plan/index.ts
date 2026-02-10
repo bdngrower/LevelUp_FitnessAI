@@ -126,6 +126,47 @@ Deno.serve(async (req) => {
         throw new Error("Resposta vazia da IA");
 
     } catch (error) {
+        console.error("Erro com Gemini:", error);
+
+        // Fallback to Groq
+        const groqKey = Deno.env.get('GROQ_API_KEY');
+        if (groqKey) {
+            try {
+                console.log("Tentando fallback com Groq...");
+                const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${groqKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: "llama-3.3-70b-versatile", // Or mixtral-8x7b-32768
+                        messages: [
+                            { role: "system", content: systemPrompt },
+                            { role: "user", content: "Gere o plano de treino JSON." }
+                        ],
+                        response_format: { type: "json_object" }
+                    })
+                });
+
+                if (groqResponse.ok) {
+                    const groqData = await groqResponse.json();
+                    const content = groqData.choices[0]?.message?.content;
+                    if (content) {
+                        const data = JSON.parse(content);
+                        return new Response(JSON.stringify(data), {
+                            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                            status: 200
+                        });
+                    }
+                } else {
+                    console.error("Erro Groq:", await groqResponse.text());
+                }
+            } catch (groqError) {
+                console.error("Erro total no fallback Groq:", groqError);
+            }
+        }
+
         return new Response(JSON.stringify({ error: error.message }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 400

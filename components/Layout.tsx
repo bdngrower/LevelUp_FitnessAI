@@ -4,15 +4,17 @@ import { Dumbbell, TrendingUp, Calendar, UserIcon, Settings, Search, Menu, Histo
 import { Logo } from './Logo';
 import { cn } from '../utils/cn';
 import { StorageService } from '../services/storage';
+import { useAuth } from '../contexts/AuthContext';
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { session } = useAuth();
 
   // Hide Navigation on specific flows
   const hideNav = location.pathname === '/' || location.pathname === '/onboarding' || location.pathname.startsWith('/workout/');
-  const isAuth = StorageService.isAuthenticated();
+  const isAuth = !!session;
 
   const user = StorageService.getProfile();
 
