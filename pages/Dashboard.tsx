@@ -93,6 +93,21 @@ export const Dashboard: React.FC = () => {
         }
     };
 
+    useEffect(() => {
+        if (!logs.length || !plan) return;
+        const lastLog = logs[logs.length - 1];
+        const lastDayId = parseInt(lastLog.dayId);
+
+        if (lastDayId === plan.days.length - 1) {
+            const isToday = new Date(lastLog.date).toDateString() === new Date().toDateString();
+            const hasSeen = sessionStorage.getItem(`week_completed_${plan.id}_${lastLog.date}`);
+            if (isToday && !hasSeen) {
+                setShowWeekCompleteModal(true);
+                sessionStorage.setItem(`week_completed_${plan.id}_${lastLog.date}`, 'true');
+            }
+        }
+    }, [logs, plan]);
+
     if (initializing) {
         return (
             <div className="p-6 space-y-6 max-w-5xl mx-auto">
@@ -145,23 +160,7 @@ export const Dashboard: React.FC = () => {
         }
     }
 
-    useEffect(() => {
-        if (!logs.length || !plan) return;
-        const lastLog = logs[logs.length - 1];
-        const lastDayId = parseInt(lastLog.dayId);
 
-        if (lastDayId === plan.days.length - 1) {
-            const isToday = new Date(lastLog.date).toDateString() === new Date().toDateString();
-            // Simple check: if finished today, show modal. 
-            // Ideally we'd check a "week_completed_viewed" flag.
-            // Using session storage to avoid annoyance on reload
-            const hasSeen = sessionStorage.getItem(`week_completed_${plan.id}_${lastLog.date}`);
-            if (isToday && !hasSeen) {
-                setShowWeekCompleteModal(true);
-                sessionStorage.setItem(`week_completed_${plan.id}_${lastLog.date}`, 'true');
-            }
-        }
-    }, [logs, plan]);
 
     const handleRepeatWeek = () => {
         setShowWeekCompleteModal(false);
