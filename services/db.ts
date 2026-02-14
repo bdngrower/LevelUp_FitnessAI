@@ -26,6 +26,7 @@ export const DbService = {
             equipment: data.equipment as any,
             waistSize: data.waist_size || undefined,
             avatarUrl: data.avatar_url || undefined,
+            phone: data.phone || undefined,
         };
     },
 
@@ -49,6 +50,7 @@ export const DbService = {
             equipment: profile.equipment,
             waist_size: profile.waistSize,
             avatar_url: profile.avatarUrl,
+            phone: profile.phone,
             updated_at: new Date().toISOString()
         });
 
@@ -183,6 +185,91 @@ export const DbService = {
 
         const days: WorkoutDay[] = daysData.map(d => ({
             id: d.id, // Using DB ID now
+            dayName: d.day_name,
+            focus: d.focus,
+            warmup: d.warmup,
+            cardio: d.cardio as CardioSession,
+            estimatedDuration: d.estimated_duration,
+            exercises: (d.exercises as any[]).sort((a, b) => a.order_index - b.order_index).map(e => ({
+                id: e.id,
+                name: e.name,
+                sets: e.sets,
+                reps: e.reps,
+                rpe: e.rpe,
+                restSeconds: e.rest_seconds,
+                notes: e.notes,
+                muscleGroup: e.muscle_group
+            }))
+        }));
+
+        return {
+            id: planData.id,
+            createdAt: planData.created_at,
+            days: days
+        };
+    },
+
+    async getPastPlans(): Promise<WeeklyPlan[]> {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return [];
+
+        const { data, error } = await supabase
+            .from('workout_plans')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('active', false)
+            .order('created_at', { ascending: false });
+
+        if (error || !data) return [];
+
+        return data.map(p => ({
+            id: p.id,
+            createdAt: p.created_at,
+            days: [] // Shallow load
+        }));
+    },
+
+    async activatePlan(planId: string): Promise<void> {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('No user logged in');
+
+        // 1. Deactivate all
+        await supabase.from('workout_plans')
+            .update({ active: false })
+            .eq('user_id', user.id);
+
+        // 2. Activate specific
+        const { error } = await supabase.from('workout_plans')
+            .update({ active: true })
+            .eq('id', planId)
+            .eq('user_id', user.id);
+
+        if (error) throw error;
+    },
+
+    async getPlanById(planId: string): Promise<WeeklyPlan | null> {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return null;
+
+        const { data: planData, error: planError } = await supabase
+            .from('workout_plans')
+            .select('*')
+            .eq('id', planId)
+            .eq('user_id', user.id)
+            .single();
+
+        if (planError || !planData) return null;
+
+        const { data: daysData, error: daysError } = await supabase
+            .from('workout_days')
+            .select(`*, exercises (*)`)
+            .eq('plan_id', planData.id)
+            .order('day_index', { ascending: true });
+
+        if (daysError || !daysData) return null;
+
+        const days: WorkoutDay[] = daysData.map(d => ({
+            id: d.id,
             dayName: d.day_name,
             focus: d.focus,
             warmup: d.warmup,

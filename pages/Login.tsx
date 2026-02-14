@@ -15,6 +15,24 @@ export const Login: React.FC = () => {
     const [error, setError] = useState('');
     const [isSignUp, setIsSignUp] = useState(false);
 
+    // State for SignUp fields
+    const [name, setName] = useState('');
+    const [phone, setPhone] = useState('');
+
+    const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        let val = e.target.value.replace(/\D/g, ''); // Remove non-digits
+        if (val.length > 11) val = val.substring(0, 11); // Max 11 digits (11 99999-9999)
+
+        // Simple Mask (XX) XXXXX-XXXX
+        if (val.length > 2) {
+            val = `(${val.substring(0, 2)}) ${val.substring(2)}`;
+        }
+        if (val.length > 10) {
+            val = `${val.substring(0, 10)}-${val.substring(10)}`;
+        }
+        setPhone(val);
+    };
+
     const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
@@ -24,20 +42,58 @@ export const Login: React.FC = () => {
             return;
         }
 
+        if (isSignUp) {
+            if (!name || name.trim().length < 3) {
+                setError('Por favor, informe seu nome completo.');
+                return;
+            }
+            if (!phone || phone.length < 14) { // (XX) XXXXX-XXXX is 15 chars, (XX) XXXX-XXXX is 14
+                setError('Por favor, informe um telefone válido.');
+                return;
+            }
+        }
+
         setLoading(true);
 
         try {
             if (isSignUp) {
-                const { error } = await supabase.auth.signUp({
+                const { data, error } = await supabase.auth.signUp({
                     email,
                     password,
+                    options: {
+                        data: {
+                            name: name,
+                            phone: phone
+                        }
+                    }
                 });
+
                 if (error) throw error;
-                // Auto sign-in happens usually, or verify email. 
-                // For development mode usually usually email confirm is off or it just works.
-                // If email confirmation is required, this might need handling.
-                // Assuming for now it signs in or we ask to check email.
-                alert('Conta criada! Verifique seu email se necessário.');
+
+                // Force save profile immediately to ensure data persistence
+                if (data.user) {
+                    // Start of OTP logic placeholder in future
+                    // await DbService.sendOtp(phone); 
+
+                    const { error: profileError } = await supabase.from('profiles').upsert({
+                        id: data.user.id,
+                        name: name,
+                        phone: phone,
+                        email: email, // Optional redundancy
+                        updated_at: new Date().toISOString()
+                    });
+
+                    if (profileError) {
+                        console.error("Error saving profile:", profileError);
+                        // Non-critical, but good to know
+                    }
+                }
+
+                alert('Conta criada com sucesso!');
+                // Automatically log in or redirect handled by Supabase session listener usually, 
+                // but let's navigate to onboarding since new users need setup.
+                navigate('/onboarding');
+
             } else {
                 const { error } = await supabase.auth.signInWithPassword({
                     email,
@@ -120,6 +176,56 @@ export const Login: React.FC = () => {
                     </div>
 
                     <form className="space-y-6" onSubmit={handleAuth}>
+
+                        <AnimatePresence>
+                            {isSignUp && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="space-y-6 overflow-hidden"
+                                >
+                                    <div>
+                                        <label htmlFor="name" className="block text-sm font-medium leading-6 text-foreground">
+                                            Nome Completo
+                                        </label>
+                                        <div className="mt-2">
+                                            <input
+                                                id="name"
+                                                name="name"
+                                                type="text"
+                                                autoComplete="name"
+                                                required={isSignUp}
+                                                value={name}
+                                                onChange={(e) => setName(e.target.value)}
+                                                className="block w-full rounded-xl border border-input bg-background py-3 px-4 text-foreground shadow-sm placeholder:text-muted-foreground focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6 transition-all"
+                                                placeholder="Seu nome"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label htmlFor="phone" className="block text-sm font-medium leading-6 text-foreground">
+                                            Telefone (WhatsApp)
+                                        </label>
+                                        <div className="mt-2">
+                                            <input
+                                                id="phone"
+                                                name="phone"
+                                                type="tel"
+                                                autoComplete="tel"
+                                                required={isSignUp}
+                                                value={phone}
+                                                onChange={handlePhoneChange}
+                                                className="block w-full rounded-xl border border-input bg-background py-3 px-4 text-foreground shadow-sm placeholder:text-muted-foreground focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6 transition-all"
+                                                placeholder="(11) 99999-9999"
+                                            />
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium leading-6 text-foreground">
                                 E-mail

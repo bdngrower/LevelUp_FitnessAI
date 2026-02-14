@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
     }
 
     try {
-        const { user } = await req.json();
+        const { user, progressionContext, previousExercises } = await req.json();
 
         if (!user) {
             throw new Error("Perfil de usuário não fornecido");
@@ -65,6 +65,32 @@ Deno.serve(async (req) => {
       - Preferência de Cardio: ${user.cardioPreference || 'Misto'}
       - Limitações físicas: ${user.limitations || "Nenhuma"}
       
+      ${progressionContext ? `
+      CONTEXTO DE EVOLUÇÃO (IMPORTANTE):
+      O aluno completou a semana anterior.
+      FEEDBACK: ${progressionContext}
+      
+      APLIQUE SOBRECARGA PROGRESSIVA:
+      - Aumente levemente o volume (séries/reps) OU a intensidade em relação a um treino padrão.
+      - Foco em técnica aprimorada e estímulo metabólico.
+      ` : ''}
+
+      ${previousExercises && previousExercises.length > 0 ? `
+      VARIEDADE E ROTAÇÃO DE EXERCÍCIOS (CRÍTICO):
+      Os seguintes exercícios foram usados no último plano:
+      [${previousExercises.join(', ')}]
+      
+      DIRETRIZES DE VARIEDADE:
+      1. EVITE REPETIR exercícios dessa lista, especialmente para o mesmo grupo muscular.
+      2. SUBSTITUA por variações biomecanicamente equivalentes.
+         Exemplos:
+         - Supino Reto Barra -> Supino Reto Halteres ou Máquina
+         - Agachamento Livre -> Leg Press ou Hack Machine
+         - Puxada Alta -> Barra Fixa ou Graviton
+      3. Se não houver alternativa viável (ex: exercícios muito básicos), pode manter, mas mude o método (ex: de 3x10 para 4x8 ou Drop-set).
+      4. O objetivo é dar novos estímulos ao músculo.
+      ` : ''}
+
       ESTRUTURA DO PLANO:
       ${splitStrategy}
       

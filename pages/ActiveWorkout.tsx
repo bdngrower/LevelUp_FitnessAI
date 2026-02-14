@@ -363,17 +363,30 @@ export const ActiveWorkout: React.FC = () => {
         </div>
 
         {/* Exercise Video Card */}
-        {!videoError && (
-          <div className="w-full mb-6 bg-card rounded-xl border border-border shadow-sm overflow-hidden">
-            <div className="p-4 border-b border-border flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Play className="w-4 h-4 text-primary fill-current" />
-                <span className="font-bold text-sm">Demonstração</span>
-              </div>
+        {/* Exercise Video Card */}
+        {/* Como cadastrar vídeos: Associe uma URL direta (.mp4) ou link de embed no campo 'video_url' do exercício no banco de dados. */}
+        <div className="w-full mb-6 bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-border flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Play className="w-4 h-4 text-primary fill-current" />
+              <span className="font-bold text-sm">Demonstração</span>
             </div>
-            <div className="relative aspect-video bg-black">
+          </div>
+
+          <div className="relative aspect-video bg-black/5 dark:bg-black flex items-center justify-center">
+            {(currentExercise.videoUrl || exerciseDetails?.videoUrl) ? (
               <video
-                key={currentExercise.name} // Force reload on change
+                key={currentExercise.videoUrl || exerciseDetails?.videoUrl}
+                src={currentExercise.videoUrl || exerciseDetails?.videoUrl}
+                className="w-full h-full object-contain"
+                controls
+                loop
+                muted
+                playsInline
+              />
+            ) : !videoError ? (
+              <video
+                key={currentExercise.name}
                 src={`/videos/${currentExercise.name.replace(/ /g, '_')}.mp4`}
                 className="w-full h-full object-contain"
                 loop
@@ -382,9 +395,16 @@ export const ActiveWorkout: React.FC = () => {
                 autoPlay
                 onError={() => setVideoError(true)}
               />
-            </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center text-muted-foreground gap-3">
+                <div className="w-12 h-12 rounded-full bg-secondary/50 flex items-center justify-center">
+                  <Play className="w-5 h-5 opacity-40 ml-1" />
+                </div>
+                <span className="text-sm font-medium opacity-60">Vídeo em breve</span>
+              </div>
+            )}
           </div>
-        )}
+        </div>
 
         {/* Inputs */}
         <div className="w-full bg-card rounded-2xl p-6 shadow-sm border border-border mb-6">

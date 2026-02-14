@@ -11,6 +11,7 @@ import { Progress } from './pages/Progress';
 import { Profile } from './pages/Profile';
 import { SettingsPage } from './pages/Settings';
 import { Landing } from './pages/Landing';
+import { PlanHistory } from './pages/PlanHistory';
 import { StorageService } from './services/storage';
 import { DbService } from './services/db';
 import { AuthProvider, useAuth } from './contexts/AuthContext';

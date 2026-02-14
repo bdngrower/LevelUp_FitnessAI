@@ -12,6 +12,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../co
 import { Skeleton } from '../components/ui/Skeleton';
 import { cn } from '../utils/cn';
 import { dicasPro } from '../data/tips';
+import { WeekCompleteModal } from '../components/WeekCompleteModal';
 
 const MotionCard = motion(Card);
 
@@ -23,6 +24,7 @@ export const Dashboard: React.FC = () => {
     const [history, setHistory] = useState<HistoryItem[]>([]);
     const [loading, setLoading] = useState(false);
     const [initializing, setInitializing] = useState(true);
+    const [showWeekCompleteModal, setShowWeekCompleteModal] = useState(false);
 
     // Select a random tip once per mount
     const randomTip = useMemo(() => {
@@ -55,10 +57,36 @@ export const Dashboard: React.FC = () => {
         if (!profile) return;
         setLoading(true);
         try {
-            const newPlan = await generateWorkoutPlan(profile);
+            let context = "";
+            let previousExercises: string[] = [];
+
+            // 1. Contexto de Progressão
+            if (showWeekCompleteModal) {
+                context = `O aluno completou a semana anterior com ${workoutsThisWeek}/${profile.daysPerWeek} treinos realizados (${Math.round(progressPercentage)}% de consistência). O foco agora é progredir cargas e manter a constância.`;
+            }
+
+            // 2. Coletar exercícios anteriores para garantir variedade
+            if (plan) {
+                // Se tem plano ativo (que está sendo concluído/substituído), usa ele como referência
+                previousExercises = plan.days.flatMap(d => d.exercises.map(e => e.name));
+            } else {
+                // Se não tem plano ativo, tenta pegar do histórico
+                const pastPlans = await DbService.getPastPlans();
+                if (pastPlans.length > 0) {
+                    const lastPlanId = pastPlans[0].id;
+                    const fullLastPlan = await DbService.getPlanById(lastPlanId);
+                    if (fullLastPlan) {
+                        previousExercises = fullLastPlan.days.flatMap(d => d.exercises.map(e => e.name));
+                    }
+                }
+            }
+
+            const newPlan = await generateWorkoutPlan(profile, context, previousExercises);
             await DbService.savePlan(newPlan);
             setPlan(newPlan);
+            setShowWeekCompleteModal(false);
         } catch (e) {
+            console.error(e);
             alert("Falha ao gerar o plano. Verifique a conexão ou tente novamente.");
         } finally {
             setLoading(false);
@@ -106,10 +134,44 @@ export const Dashboard: React.FC = () => {
         if (!isNaN(lastDayId) && lastDayId < plan.days.length - 1) {
             nextDayIndex = lastDayId + 1;
         } else if (!isNaN(lastDayId) && lastDayId === plan.days.length - 1) {
-            // Finished the week, loop back or show "Done" (Looping back for MVP)
+            // Finished the week
             nextDayIndex = 0;
+
+            // Check if we should show completion modal (if completed today and modal hasn't been shown yet this session)
+            const isToday = new Date(lastLog.date).toDateString() === new Date().toDateString();
+            // In a real app we would track "hasSeenModal" in DB or LocalStorage
+            // For now, let's show it if it's today. 
+            // To prevent infinite loop, we might need a ref or effect, handled below.
         }
     }
+
+    useEffect(() => {
+        if (!logs.length || !plan) return;
+        const lastLog = logs[logs.length - 1];
+        const lastDayId = parseInt(lastLog.dayId);
+
+        if (lastDayId === plan.days.length - 1) {
+            const isToday = new Date(lastLog.date).toDateString() === new Date().toDateString();
+            // Simple check: if finished today, show modal. 
+            // Ideally we'd check a "week_completed_viewed" flag.
+            // Using session storage to avoid annoyance on reload
+            const hasSeen = sessionStorage.getItem(`week_completed_${plan.id}_${lastLog.date}`);
+            if (isToday && !hasSeen) {
+                setShowWeekCompleteModal(true);
+                sessionStorage.setItem(`week_completed_${plan.id}_${lastLog.date}`, 'true');
+            }
+        }
+    }, [logs, plan]);
+
+    const handleRepeatWeek = () => {
+        setShowWeekCompleteModal(false);
+        // Visual feedback or toast could go here
+    };
+
+    const handleAdjustSettings = () => {
+        setShowWeekCompleteModal(false);
+        navigate('/settings');
+    };
     const nextWorkout = plan?.days[nextDayIndex];
 
     return (
@@ -124,7 +186,12 @@ export const Dashboard: React.FC = () => {
             <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
                 <div>
                     <h1 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight">
-                        Olá, {profile.name?.split(' ')[0] || "Atleta"}
+                        {(() => {
+                            const hour = new Date().getHours();
+                            const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
+                            const firstName = profile.name ? profile.name.split(' ')[0] : 'Atleta';
+                            return `${greeting}, ${firstName} 👋`;
+                        })()}
                     </h1>
                     <p className="text-muted-foreground font-medium mt-1">
                         Vamos esmagar as metas hoje?
@@ -151,23 +218,58 @@ export const Dashboard: React.FC = () => {
                 </div>
             </header>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
 
-                {/* Main Column */}
-                <div className="lg:col-span-2 space-y-6">
+                {/* Main Content Area - Full Width on Mobile, Col-Span-8 on Desktop */}
+                <div className="md:col-span-12 lg:col-span-8 space-y-6 md:space-y-8">
+
+                    {/* Quick Stats Row - Mobile Only (Visible on Desktop via Sidebar usually, but good here too) */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <MotionCard variants={itemFadeUp} className="bg-card hover:border-primary/30 transition-colors group">
+                            <CardContent className="p-4 md:p-5 flex flex-col justify-between h-full">
+                                <div className="flex items-center gap-2 mb-2 md:mb-3">
+                                    <div className="p-1.5 md:p-2 bg-orange-100/50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded-lg group-hover:bg-orange-200/50 dark:group-hover:bg-orange-900/30 transition-colors">
+                                        <Flame className="w-4 h-4 md:w-5 md:h-5" />
+                                    </div>
+                                    <span className="text-[10px] md:text-xs font-bold uppercase text-muted-foreground tracking-wider">Calorias</span>
+                                </div>
+                                <div>
+                                    <div className="text-2xl md:text-3xl font-black text-foreground tracking-tight">{calorieTarget}</div>
+                                    <p className="text-[10px] md:text-xs text-muted-foreground font-medium mt-0.5 md:mt-1">kcal / dia</p>
+                                </div>
+                            </CardContent>
+                        </MotionCard>
+
+                        <MotionCard variants={itemFadeUp} className="bg-card hover:border-blue-500/30 transition-colors group">
+                            <CardContent className="p-4 md:p-5 flex flex-col justify-between h-full">
+                                <div className="flex items-center gap-2 mb-2 md:mb-3">
+                                    <div className="p-1.5 md:p-2 bg-blue-100/50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg group-hover:bg-blue-200/50 dark:group-hover:bg-blue-900/30 transition-colors">
+                                        <CheckCircle className="w-4 h-4 md:w-5 md:h-5" />
+                                    </div>
+                                    <span className="text-[10px] md:text-xs font-bold uppercase text-muted-foreground tracking-wider">Frequência</span>
+                                </div>
+                                <div>
+                                    <div className="text-2xl md:text-3xl font-black text-foreground tracking-tight">
+                                        {workoutsThisWeek} <span className="text-sm md:text-lg text-muted-foreground font-medium">/ {profile.daysPerWeek}</span>
+                                    </div>
+                                    <p className="text-[10px] md:text-xs text-muted-foreground font-medium mt-0.5 md:mt-1">Treinos na semana</p>
+                                </div>
+                            </CardContent>
+                        </MotionCard>
+                    </div>
 
                     {/* Hero Card - Next Workout */}
                     {!plan ? (
                         <Card className="border-dashed border-2 bg-secondary/20 border-border">
-                            <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-                                <div className="bg-primary/10 p-5 rounded-full mb-6">
-                                    <Play className="w-10 h-10 text-primary" />
+                            <CardContent className="flex flex-col items-center justify-center py-12 md:py-16 text-center">
+                                <div className="bg-primary/10 p-4 md:p-5 rounded-full mb-4 md:mb-6">
+                                    <Play className="w-8 h-8 md:w-10 md:h-10 text-primary" />
                                 </div>
-                                <h3 className="text-xl font-bold mb-2">Nenhum plano ativo</h3>
-                                <p className="text-muted-foreground max-w-sm mb-8 text-sm leading-relaxed">
-                                    A IA do CutCoach pode criar uma rotina personalizada para você agora mesmo.
+                                <h3 className="text-lg md:text-xl font-bold mb-2">Nenhum plano ativo</h3>
+                                <p className="text-muted-foreground max-w-sm mb-6 md:mb-8 text-sm leading-relaxed px-4">
+                                    A IA do LevelUp pode criar uma rotina personalizada para você agora mesmo.
                                 </p>
-                                <Button onClick={handleGeneratePlan} isLoading={loading} size="lg" className="px-8 shadow-glow">
+                                <Button onClick={handleGeneratePlan} isLoading={loading} size="lg" className="px-8 shadow-glow w-full md:w-auto">
                                     Gerar Plano Inteligente
                                 </Button>
                             </CardContent>
@@ -176,14 +278,14 @@ export const Dashboard: React.FC = () => {
                         <motion.div
                             whileHover={cardHover}
                             onClick={() => navigate(`/workout/${nextDayIndex}`)}
-                            className="cursor-pointer group relative h-[320px] rounded-3xl overflow-hidden shadow-xl shadow-primary/10"
+                            className="cursor-pointer group relative h-[400px] md:h-[360px] rounded-3xl overflow-hidden shadow-2xl shadow-primary/5 ring-1 ring-white/10"
                         >
                             {/* Video Background */}
                             {nextWorkout?.exercises?.[0]?.name && (
                                 <video
                                     key={nextWorkout.exercises[0].name}
                                     src={`/videos/${nextWorkout.exercises[0].name.replace(/ /g, '_')}.mp4`}
-                                    className="absolute inset-0 w-full h-full object-cover z-0"
+                                    className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 group-hover:opacity-50 transition-opacity duration-700"
                                     loop
                                     muted
                                     playsInline
@@ -192,172 +294,65 @@ export const Dashboard: React.FC = () => {
                                 />
                             )}
 
-                            {/* Gradient overlay for readability */}
-                            <div className="absolute inset-0 bg-gradient-to-br from-gray-900/90 via-slate-800/80 to-slate-900/90 z-[1]"></div>
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-[1]"></div>
+                            {/* Gradient overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent z-[1]"></div>
+                            <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-transparent to-transparent z-[1]"></div>
 
-                            {/* Decorative Icon */}
-                            <div className="absolute -right-10 -bottom-10 z-[1] opacity-10">
-                                <Dumbbell className="w-64 h-64 text-white rotate-[-15deg]" />
-                            </div>
-
-                            <div className="absolute inset-0 p-8 flex flex-col justify-between z-10">
-                                <div className="flex justify-between items-start">
-                                    <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 px-3 py-1.5 rounded-full text-xs font-bold text-white uppercase tracking-wider">
+                            <div className="absolute inset-0 p-6 md:p-8 flex flex-col justify-end md:justify-between z-10">
+                                <div className="hidden md:flex justify-between items-start">
+                                    <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-full text-xs font-bold text-white uppercase tracking-wider">
                                         <Play className="w-3 h-3 fill-current" /> Próximo Treino
                                     </div>
                                 </div>
 
                                 <div>
-                                    <h2 className="text-3xl md:text-4xl font-black text-white mb-2 leading-tight tracking-tight">
-                                        {nextWorkout?.focus}
-                                    </h2>
-                                    <div className="flex items-center gap-4 text-white/80 font-medium text-sm md:text-base">
-                                        <span className="flex items-center gap-1.5 bg-black/20 px-3 py-1 rounded-lg backdrop-blur-sm">
-                                            <Clock className="w-4 h-4" /> {nextWorkout?.estimatedDuration} min
-                                        </span>
-                                        <span className="flex items-center gap-1.5 bg-black/20 px-3 py-1 rounded-lg backdrop-blur-sm">
-                                            <Dumbbell className="w-4 h-4" /> {nextWorkout?.exercises.length} Exercícios
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center justify-between mt-4">
-                                    <div className="flex -space-x-3">
-                                        {[1, 2, 3].map(i => (
-                                            <div key={i} className="w-10 h-10 rounded-full bg-slate-700 border-2 border-slate-800 flex items-center justify-center text-white/50 text-[10px] font-bold">
-                                                {i}
-                                            </div>
-                                        ))}
-                                        <div className="w-10 h-10 rounded-full bg-primary border-2 border-slate-800 flex items-center justify-center text-white font-bold pl-0.5 z-10 shadow-lg">
-                                            <ChevronRight className="w-5 h-5" />
+                                    <div className="md:hidden mb-4">
+                                        <div className="inline-flex items-center gap-2 bg-primary/20 backdrop-blur-md border border-primary/20 px-3 py-1 rounded-full text-[10px] font-bold text-primary uppercase tracking-wider">
+                                            <Play className="w-3 h-3 fill-current" /> Próximo
                                         </div>
                                     </div>
 
-                                    <button className="bg-white text-slate-900 font-bold px-6 py-3 rounded-xl shadow-lg hover:scale-105 transition-transform flex items-center gap-2">
-                                        Iniciar Agora <ChevronRight className="w-4 h-4" />
-                                    </button>
+                                    <h2 className="text-3xl md:text-5xl font-black text-white mb-3 leading-[0.9] tracking-tighter shadow-black/50 drop-shadow-sm">
+                                        {nextWorkout?.focus}
+                                    </h2>
+
+                                    <div className="flex flex-wrap items-center gap-3 text-white/80 font-medium text-sm md:text-base mb-6">
+                                        <span className="flex items-center gap-1.5 bg-secondary/50 px-3 py-1.5 rounded-lg backdrop-blur-md border border-white/5">
+                                            <Clock className="w-4 h-4 text-primary" /> {nextWorkout?.estimatedDuration} min
+                                        </span>
+                                        <span className="flex items-center gap-1.5 bg-secondary/50 px-3 py-1.5 rounded-lg backdrop-blur-md border border-white/5">
+                                            <Dumbbell className="w-4 h-4 text-primary" /> {nextWorkout?.exercises.length} Exercícios
+                                        </span>
+                                    </div>
+
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex -space-x-2 md:-space-x-3 overflow-hidden">
+                                            {nextWorkout?.exercises.slice(0, 4).map((ex, i) => (
+                                                <div key={i} className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-secondary border-2 border-background flex items-center justify-center text-[10px] font-bold text-muted-foreground uppercase first:text-primary">
+                                                    {ex.name[0]}
+                                                </div>
+                                            ))}
+                                            {nextWorkout?.exercises.length > 4 && (
+                                                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-secondary border-2 border-background flex items-center justify-center text-[10px] font-bold text-muted-foreground">
+                                                    +{nextWorkout.exercises.length - 4}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <button className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-5 py-2.5 md:px-6 md:py-3 rounded-xl shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
+                                            Iniciar <ChevronRight className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </motion.div>
                     )}
-
-                    {/* Quick Stats Grid */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <MotionCard variants={itemFadeUp} className="bg-card hover:border-primary/30 transition-colors group">
-                            <CardContent className="p-5 flex flex-col justify-between h-full">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <div className="p-2 bg-orange-100/50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded-lg group-hover:bg-orange-200/50 dark:group-hover:bg-orange-900/30 transition-colors">
-                                        <Flame className="w-5 h-5" />
-                                    </div>
-                                    <span className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Calorias (Meta)</span>
-                                </div>
-                                <div>
-                                    <div className="text-3xl font-black text-foreground tracking-tight">{calorieTarget}</div>
-                                    <p className="text-xs text-muted-foreground font-medium mt-1">kcal / dia (TDEE Ajustado)</p>
-                                </div>
-                            </CardContent>
-                        </MotionCard>
-
-                        <MotionCard variants={itemFadeUp} className="bg-card hover:border-blue-500/30 transition-colors group">
-                            <CardContent className="p-5 flex flex-col justify-between h-full">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <div className="p-2 bg-blue-100/50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg group-hover:bg-blue-200/50 dark:group-hover:bg-blue-900/30 transition-colors">
-                                        <CheckCircle className="w-5 h-5" />
-                                    </div>
-                                    <span className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Frequência</span>
-                                </div>
-                                <div>
-                                    <div className="text-3xl font-black text-foreground tracking-tight">
-                                        {workoutsThisWeek} <span className="text-lg text-muted-foreground font-medium">/ {profile.daysPerWeek}</span>
-                                    </div>
-                                    <p className="text-xs text-muted-foreground font-medium mt-1">Treinos na semana</p>
-                                </div>
-                            </CardContent>
-                        </MotionCard>
-                    </div>
                 </div>
 
-                {/* Sidebar Column */}
-                <div className="space-y-6">
+                {/* Sidebar Column - On Mobile acts as secondary content */}
+                <div className="md:col-span-12 lg:col-span-4 space-y-6">
 
-                    {/* Profile Snapshot */}
-                    <Card className="overflow-hidden border-0 shadow-lg">
-                        <div className="h-24 bg-gradient-to-r from-slate-700 to-slate-800 relative"></div>
-                        <CardContent className="px-6 pb-6 relative">
-                            <div className="absolute -top-10 left-6">
-                                <div className="w-20 h-20 rounded-full bg-card p-1.5 shadow-sm">
-                                    <div className="w-full h-full rounded-full bg-gradient-to-tr from-primary to-green-300 flex items-center justify-center text-white font-bold text-2xl">
-                                        {profile.name?.[0] || "U"}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="pt-12 mb-6">
-                                <h3 className="font-bold text-xl text-foreground">{profile.name || "Usuário"}</h3>
-                                <p className="text-sm text-muted-foreground font-medium">Nível {profile.experience === 'beginner' ? 'Iniciante' : profile.experience === 'intermediate' ? 'Intermediário' : 'Avançado'}</p>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3 mb-4">
-                                <div className="bg-secondary/50 dark:bg-white/5 p-3 rounded-xl border border-border/50 text-center">
-                                    <span className="block text-xs text-muted-foreground uppercase font-bold mb-1">Peso</span>
-                                    <span className="text-lg font-bold text-foreground">{profile.weight} kg</span>
-                                </div>
-                                <div className="bg-secondary/50 dark:bg-white/5 p-3 rounded-xl border border-border/50 text-center">
-                                    <span className="block text-xs text-muted-foreground uppercase font-bold mb-1">Cintura</span>
-                                    <span className="text-lg font-bold text-foreground">{profile.waistSize || '--'} cm</span>
-                                </div>
-                            </div>
-
-                            <Button variant="outline" className="w-full text-xs font-bold uppercase tracking-wider h-10 border-border" onClick={() => navigate('/profile')}>
-                                Ver Perfil Completo
-                            </Button>
-                        </CardContent>
-                    </Card>
-
-                    {/* Activity Feed */}
-                    <Card className="border-border/60">
-                        <CardHeader className="pb-4 border-b border-border/40">
-                            <div className="flex justify-between items-center">
-                                <CardTitle className="text-base">Histórico Recente</CardTitle>
-                                <Button variant="ghost" size="sm" onClick={() => navigate('/progress')} className="h-8 text-xs hover:bg-secondary">
-                                    Ver tudo
-                                </Button>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="p-0">
-                            {history.length === 0 ? (
-                                <div className="py-10 text-center px-6">
-                                    <div className="inline-flex bg-secondary p-3 rounded-full mb-3 text-muted-foreground">
-                                        <HistoryIcon className="w-5 h-5" />
-                                    </div>
-                                    <p className="text-sm text-muted-foreground font-medium">Nenhuma atividade registrada ainda.</p>
-                                </div>
-                            ) : (
-                                <div className="divide-y divide-border/40">
-                                    {history.slice(0, 4).map((item) => (
-                                        <div key={item.id} className="flex items-center gap-4 p-4 hover:bg-secondary/30 dark:hover:bg-white/5 transition-colors">
-                                            <div className={cn("p-2.5 rounded-xl shrink-0 border border-transparent",
-                                                item.type === 'workout' ? 'bg-green-100/50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border-green-200/50 dark:border-green-800/30' :
-                                                    item.type === 'weight' ? 'bg-blue-100/50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-blue-200/50 dark:border-blue-800/30' :
-                                                        'bg-secondary text-muted-foreground border-border'
-                                            )}>
-                                                {item.type === 'workout' ? <CheckCircle className="w-4 h-4" /> : item.type === 'weight' ? <TrendingUp className="w-4 h-4" /> : <HistoryIcon className="w-4 h-4" />}
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="font-semibold text-sm truncate text-foreground">{item.title}</div>
-                                                <div className="text-xs text-muted-foreground truncate">{item.description}</div>
-                                            </div>
-                                            <div className="text-[10px] font-medium text-muted-foreground/70 whitespace-nowrap bg-secondary/50 px-2 py-1 rounded">
-                                                {new Date(item.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-
+                    {/* Pro Tip Widget */}
                     <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl p-5 border border-primary/20 relative overflow-hidden">
                         <div className="relative z-10">
                             <div className="inline-flex items-center gap-2 mb-2">
@@ -367,9 +362,70 @@ export const Dashboard: React.FC = () => {
                                 "{randomTip}"
                             </p>
                         </div>
+                        <div className="absolute right-0 bottom-0 opacity-5">
+                            <Dumbbell className="w-24 h-24 -rotate-12 translate-x-4 translate-y-4" />
+                        </div>
                     </div>
+
+                    {/* Activity Feed */}
+                    <Card className="border-border/60 shadow-sm">
+                        <CardHeader className="pb-4 border-b border-border/40 px-5 pt-5">
+                            <div className="flex justify-between items-center">
+                                <CardTitle className="text-base font-bold flex items-center gap-2">
+                                    <HistoryIcon className="w-4 h-4 text-primary" /> Histórico Recente
+                                </CardTitle>
+                                <Button variant="ghost" size="sm" onClick={() => navigate('/progress')} className="h-8 text-xs hover:bg-secondary">
+                                    Ver tudo
+                                </Button>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            {history.length === 0 ? (
+                                <div className="py-12 text-center px-6">
+                                    <div className="inline-flex bg-secondary p-3 rounded-full mb-3 text-muted-foreground animate-pulse">
+                                        <HistoryIcon className="w-6 h-6" />
+                                    </div>
+                                    <p className="text-sm text-muted-foreground font-medium">Bora treinar hoje?</p>
+                                </div>
+                            ) : (
+                                <div className="divide-y divide-border/40">
+                                    {history.slice(0, 5).map((item) => (
+                                        <div key={item.id} className="flex items-center gap-4 p-4 hover:bg-secondary/30 transition-colors">
+                                            <div className={cn("p-2.5 rounded-xl shrink-0 border border-transparent shadow-sm",
+                                                item.type === 'workout' ? 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20' :
+                                                    item.type === 'weight' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20' :
+                                                        'bg-secondary text-muted-foreground border-border'
+                                            )}>
+                                                {item.type === 'workout' ? <CheckCircle className="w-4 h-4" /> : item.type === 'weight' ? <TrendingUp className="w-4 h-4" /> : <HistoryIcon className="w-4 h-4" />}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="font-semibold text-sm truncate text-foreground">{item.title}</div>
+                                                <div className="text-xs text-muted-foreground truncate">{item.description}</div>
+                                            </div>
+                                            <div className="text-[10px] font-medium text-muted-foreground/70 whitespace-nowrap">
+                                                {new Date(item.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
                 </div>
             </div>
+
+            <WeekCompleteModal
+                isOpen={showWeekCompleteModal}
+                onClose={() => setShowWeekCompleteModal(false)}
+                onGenerateNewPlan={handleGeneratePlan}
+                onRepeatWeek={handleRepeatWeek}
+                onAdjustSettings={handleAdjustSettings}
+                stats={{
+                    workoutsCompleted: workoutsThisWeek,
+                    totalWorkouts: profile.daysPerWeek,
+                    consistency: Math.round(progressPercentage)
+                }}
+            />
         </motion.div>
     );
 };

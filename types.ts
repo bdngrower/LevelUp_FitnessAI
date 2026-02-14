@@ -17,6 +17,7 @@ export interface UserProfile {
   equipment: 'full_gym'; // Fixed
   waistSize?: number; // cm, optional
   avatarUrl?: string; // profile photo URL
+  phone?: string; // (XX) XXXXX-XXXX
 }
 
 export interface ExerciseDefinition {
@@ -24,6 +25,7 @@ export interface ExerciseDefinition {
   name: string;
   muscleGroup: string;
   equipment: string;
+  videoUrl?: string; // URL externa ou path local
   alternatives: string[];
   execution: {
     setup: string;
@@ -51,6 +53,7 @@ export interface Exercise {
   restSeconds: number;
   notes?: string;
   muscleGroup?: string;
+  videoUrl?: string;
 }
 
 export interface CardioSession {

@@ -8,17 +8,49 @@ import { Card } from '../components/ui/Card';
 import { Clock, Dumbbell, Play, Flame, Calendar, ChevronRight } from '../components/Icons';
 import { Button } from '../components/ui/Button';
 
+import { Skeleton } from '../components/ui/Skeleton';
+
 export const WorkoutPlan: React.FC = () => {
     const [plan, setPlan] = useState<WeeklyPlan | null>(null);
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchPlan = async () => {
-            const p = await DbService.getPlan();
-            setPlan(p);
+            try {
+                const p = await DbService.getPlan();
+                setPlan(p);
+            } finally {
+                setLoading(false);
+            }
         };
         fetchPlan();
     }, []);
+
+    if (loading) {
+        return (
+            <div className="p-6 md:p-8 pb-24 max-w-4xl mx-auto space-y-8 animate-pulse">
+                <div className="mb-10 space-y-3">
+                    <Skeleton className="h-10 w-64 rounded-lg" />
+                    <Skeleton className="h-6 w-48 rounded-lg" />
+                </div>
+                <div className="space-y-5">
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} className="rounded-2xl border border-border/50 bg-card p-6 h-48 flex flex-col justify-between">
+                            <div className="space-y-4">
+                                <Skeleton className="h-8 w-3/4 rounded-md" />
+                                <div className="flex gap-3">
+                                    <Skeleton className="h-6 w-20 rounded-md" />
+                                    <Skeleton className="h-6 w-24 rounded-md" />
+                                </div>
+                            </div>
+                            <Skeleton className="h-4 w-full rounded-md opacity-50" />
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
 
     if (!plan) return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6 animate-fade-in">
