@@ -187,7 +187,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
         {/* Content Wrapper */}
         <main className={cn("flex-1 overflow-y-auto overflow-x-hidden scroll-smooth", !hideNav && "pb-[80px] lg:pb-0")}>
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 max-w-[1600px] mx-auto">
+          <div className="max-w-[1600px] mx-auto">
             {children}
           </div>
         </main>
