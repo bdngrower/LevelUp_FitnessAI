@@ -82,20 +82,26 @@ export const Login: React.FC = () => {
                 }}
             />
 
-            {/* ═══ Background shapes ═══ */}
-            <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-emerald-500/5 blur-[200px] rounded-full pointer-events-none" />
-            <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-emerald-600/5 blur-[150px] rounded-full pointer-events-none" />
-
             {/* ═══════════════════════════════════════════════════════
-                LEFT — Brand Statement (60% width, NOT 50/50)
+                LEFT — Brand + GYM Image (58% width)
                 ═══════════════════════════════════════════════════════ */}
-            <div className="hidden lg:flex lg:w-[58%] relative flex-col justify-between p-12 xl:p-16">
+            <div className="hidden lg:flex lg:w-[58%] relative flex-col justify-between p-12 xl:p-16 overflow-hidden">
+                {/* Background gym image */}
+                <img
+                    src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&q=80&auto=format&fit=crop"
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-cover"
+                />
+                {/* Dark overlay */}
+                <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a]/95 via-[#0a0a0a]/80 to-[#0a0a0a]/60" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a]/80 to-transparent" />
+
                 {/* Top — nav */}
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ ...spring, delay: 0.1 }}
-                    className="flex items-center gap-2.5"
+                    className="relative z-10 flex items-center gap-2.5"
                 >
                     <Link to="/" className="flex items-center gap-2.5 group">
                         <Logo className="h-8 w-auto" />
@@ -106,7 +112,7 @@ export const Login: React.FC = () => {
                 </motion.div>
 
                 {/* Center — Massive headline */}
-                <div>
+                <div className="relative z-10">
                     <motion.div
                         initial={{ opacity: 0, y: 40 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -114,7 +120,7 @@ export const Login: React.FC = () => {
                     >
                         <span className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase tracking-[0.3em] mb-8">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                            PLATAFORMA #1 EM IA FITNESS
+                            SEU PERSONAL TRAINER COM IA
                         </span>
                     </motion.div>
 
@@ -135,9 +141,9 @@ export const Login: React.FC = () => {
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ ...spring, delay: 0.5 }}
-                        className="text-white/35 text-lg max-w-md leading-relaxed"
+                        className="text-white/40 text-lg max-w-md leading-relaxed"
                     >
-                        O treino que se adapta a você. Não o contrário. IA que entende seu corpo, seus objetivos, seu ritmo.
+                        Séries, repetições e progressão de carga — tudo calculado por IA que entende seu objetivo. Hipertrofia, emagrecimento ou funcional.
                     </motion.p>
                 </div>
 
@@ -146,7 +152,7 @@ export const Login: React.FC = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.7 }}
-                    className="flex items-center gap-5"
+                    className="relative z-10 flex items-center gap-5"
                 >
                     <div className="flex -space-x-2.5">
                         {[12, 25, 33, 41, 53].map(i => (
@@ -164,7 +170,7 @@ export const Login: React.FC = () => {
                                 <Star key={i} className="w-3 h-3 text-emerald-400 fill-emerald-400" />
                             ))}
                         </div>
-                        <span className="text-white/40 text-xs font-medium">+2.000 atletas já treinam com IA</span>
+                        <span className="text-white/40 text-xs font-medium">+2.000 atletas treinando com IA</span>
                     </div>
                 </motion.div>
             </div>
@@ -198,7 +204,7 @@ export const Login: React.FC = () => {
                             </h2>
                             <p className="mt-1.5 text-sm text-white/35">
                                 {isSignUp
-                                    ? 'Comece a treinar com inteligência.'
+                                    ? 'Monte seu treino personalizado em segundos.'
                                     : 'Acesse seu plano de treino.'}
                             </p>
                         </div>
