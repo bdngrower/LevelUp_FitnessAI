@@ -1,102 +1,97 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Dumbbell, TrendingUp, Calendar, ArrowRight, CheckCircle2, Star } from '../components/Icons';
+import { motion, useScroll, useTransform, useInView } from 'framer-motion';
+import { ArrowRight, CheckCircle2, Star } from '../components/Icons';
 import { Logo } from '../components/Logo';
 import { useAuth } from '../contexts/AuthContext';
 
-const stagger = {
-  animate: { transition: { staggerChildren: 0.1 } }
+/* ─── Spring configs (not linear!) ─── */
+const spring = { type: 'spring', stiffness: 120, damping: 20 };
+const springBounce = { type: 'spring', stiffness: 200, damping: 12 };
+
+/* ─── Reveal wrapper ─── */
+const Reveal: React.FC<{ children: React.ReactNode; delay?: number; className?: string }> = ({ children, delay = 0, className }) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: '-80px' });
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 60 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ ...spring, delay }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
 };
 
-const fadeUp = {
-  initial: { opacity: 0, y: 30 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } }
-};
-
-const scaleIn = {
-  initial: { opacity: 0, scale: 0.9 },
-  animate: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } }
-};
-
-const stats = [
-  { value: '2.000+', label: 'Planos Gerados' },
-  { value: '98%', label: 'Satisfação' },
-  { value: '15s', label: 'Para seu Plano' },
-];
-
+/* ─── Data ─── */
 const features = [
   {
-    icon: Calendar,
-    title: 'Plano em Segundos',
-    description: 'Diga seus objetivos e a IA cria uma rotina semanal personalizada instantaneamente.',
-    gradient: 'from-emerald-500/20 to-teal-500/20',
-    iconColor: 'text-emerald-400',
+    icon: '⚡',
+    title: 'IA que entende você',
+    desc: 'Conte seus objetivos e a IA monta um plano semanal completo em 15 segundos. Não é template — é feito pra você.',
+    tag: 'INTELIGÊNCIA',
   },
   {
-    icon: Dumbbell,
-    title: 'Adapta ao Seu Ritmo',
-    description: 'Cada treino ajusta carga e volume conforme o seu feedback. Nunca estagna.',
-    gradient: 'from-blue-500/20 to-cyan-500/20',
-    iconColor: 'text-blue-400',
+    icon: '📈',
+    title: 'Progressão real',
+    desc: 'Cada treino alimenta a IA. Ela ajusta carga, volume e exercícios conforme seu feedback. Zero estagnação.',
+    tag: 'ADAPTAÇÃO',
   },
   {
-    icon: TrendingUp,
-    title: 'Números que Motivam',
-    description: 'Volume total, streaks, conquistas — veja sua evolução com dados reais.',
-    gradient: 'from-amber-500/20 to-orange-500/20',
-    iconColor: 'text-amber-400',
+    icon: '🏆',
+    title: 'Conquistas que motivam',
+    desc: 'Acompanhe volume total, streaks, records pessoais. Veja sua evolução com dados reais — não achismo.',
+    tag: 'DADOS',
   },
 ];
 
 const testimonials = [
-  {
-    name: 'Lucas M.',
-    role: 'Iniciante',
-    text: 'Nunca conseguia manter uma rotina. Com o LevelUp, já são 3 meses sem falhar.',
-    avatar: 'https://i.pravatar.cc/100?img=12',
-    stars: 5,
-  },
-  {
-    name: 'Ana R.',
-    role: 'Atleta',
-    text: 'A IA entendeu meu objetivo de hipertrofia perfeitamente. Plano melhor que do personal.',
-    avatar: 'https://i.pravatar.cc/100?img=25',
-    stars: 5,
-  },
-  {
-    name: 'Pedro S.',
-    role: 'Emagrecimento',
-    text: '-12kg em 4 meses seguindo o plano. O app sabe exatamente o que eu preciso.',
-    avatar: 'https://i.pravatar.cc/100?img=33',
-    stars: 5,
-  },
+  { name: 'Lucas M.', role: 'Iniciante • 3 meses', text: 'Nunca conseguia manter uma rotina. Com o LevelUp, já são 3 meses sem falhar. O plano se adapta a mim, não o contrário.', avatar: 'https://i.pravatar.cc/100?img=12' },
+  { name: 'Ana R.', role: 'Atleta • Hipertrofia', text: 'A IA entendeu meu objetivo de hipertrofia perfeitamente. Plano melhor que do personal. E de graça.', avatar: 'https://i.pravatar.cc/100?img=25' },
+  { name: 'Pedro S.', role: '-12kg em 4 meses', text: 'Segui o plano religiosamente. O app sabe exatamente quando puxar mais pesado e quando dar descanso.', avatar: 'https://i.pravatar.cc/100?img=33' },
 ];
 
 export const Landing: React.FC = () => {
   const { session } = useAuth();
+  const heroRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
+  const heroY = useTransform(scrollYProgress, [0, 1], [0, 200]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden selection:bg-primary/30">
+    <div className="bg-[#0a0a0a] text-white overflow-x-hidden selection:bg-emerald-500/30 min-h-screen">
 
-      {/* Navbar — sticky, minimal */}
-      <header className="fixed top-0 w-full z-50 bg-background/70 backdrop-blur-xl border-b border-border/50">
-        <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5 font-bold text-lg tracking-tight">
-            <Logo className="h-10 w-auto" />
-            <span>LevelUp<span className="text-primary">.AI</span></span>
+      {/* ═══ GRAIN TEXTURE OVERLAY ═══ */}
+      <div
+        className="pointer-events-none fixed inset-0 z-[100] opacity-[0.03]"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+        }}
+      />
+
+      {/* ═══ NAVBAR ═══ */}
+      <header className="fixed top-0 w-full z-50 bg-[#0a0a0a]/80 backdrop-blur-lg border-b border-white/5">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2.5">
+            <Logo className="h-9 w-auto" />
+            <span className="font-semibold text-sm tracking-wide">
+              LEVELUP<span className="text-emerald-400">.AI</span>
+            </span>
           </Link>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             {session ? (
-              <Link to="/dashboard" className="bg-primary text-primary-foreground px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-all active:scale-95 shadow-lg shadow-primary/20">
+              <Link to="/dashboard" className="bg-emerald-500 text-black px-5 py-2 rounded-md text-sm font-bold hover:bg-emerald-400 transition-all active:scale-95">
                 Dashboard
               </Link>
             ) : (
               <>
-                <Link to="/login" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
+                <Link to="/login" className="text-sm text-white/60 hover:text-white transition-colors hidden sm:block font-medium">
                   Entrar
                 </Link>
-                <Link to="/onboarding" className="bg-primary text-primary-foreground px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-all active:scale-95 shadow-lg shadow-primary/20">
+                <Link to="/onboarding" className="bg-emerald-500 text-black px-5 py-2 rounded-md text-sm font-bold hover:bg-emerald-400 transition-all active:scale-95">
                   Começar Grátis
                 </Link>
               </>
@@ -105,226 +100,289 @@ export const Landing: React.FC = () => {
         </div>
       </header>
 
-      {/* ═══════ HERO — Visceral Impact ═══════ */}
-      <section className="relative pt-28 pb-16 lg:pt-44 lg:pb-28 px-5">
-        {/* Ambient glow — organic, not mesh */}
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/15 blur-[140px] rounded-full pointer-events-none" />
-        <div className="absolute top-40 right-[10%] w-[200px] h-[200px] bg-emerald-400/10 blur-[100px] rounded-full pointer-events-none" />
+      {/* ═══════════════════════════════════════════════════════
+          HERO — MASSIVE TYPOGRAPHY + PARALLAX
+          ═══════════════════════════════════════════════════════ */}
+      <section ref={heroRef} className="relative min-h-screen flex flex-col justify-center px-6 pt-20 overflow-hidden">
+        {/* Background: radial spot, NOT mesh */}
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-emerald-500/8 blur-[180px] rounded-full pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[300px] bg-emerald-600/5 blur-[120px] rounded-full pointer-events-none" />
 
+        <motion.div style={{ y: heroY, opacity: heroOpacity }} className="relative z-10 max-w-7xl mx-auto w-full">
+          {/* Badge */}
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ ...spring, delay: 0.1 }}
+            className="mb-8"
+          >
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-widest">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              2.000+ planos criados
+            </span>
+          </motion.div>
+
+          {/* MASSIVE HEADLINE — staggered word reveal */}
+          <div className="overflow-hidden">
+            <motion.h1
+              className="font-['Outfit'] text-[clamp(3.5rem,12vw,11rem)] font-black leading-[0.9] tracking-tighter"
+              initial="hidden"
+              animate="visible"
+              variants={{
+                hidden: {},
+                visible: { transition: { staggerChildren: 0.08 } },
+              }}
+            >
+              {['SEU', 'TREINO'].map((word, i) => (
+                <motion.span
+                  key={i}
+                  className="inline-block mr-[0.25em]"
+                  variants={{
+                    hidden: { y: '100%', opacity: 0, rotateX: -40 },
+                    visible: { y: 0, opacity: 1, rotateX: 0, transition: { ...spring, delay: 0.2 + i * 0.12 } },
+                  }}
+                >
+                  {word}
+                </motion.span>
+              ))}
+              <br />
+              <motion.span
+                className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-emerald-300 to-teal-400"
+                variants={{
+                  hidden: { y: '100%', opacity: 0 },
+                  visible: { y: 0, opacity: 1, transition: { ...spring, delay: 0.5 } },
+                }}
+              >
+                IDEAL.
+              </motion.span>
+            </motion.h1>
+          </div>
+
+          {/* Sub + CTA — offset to the right */}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...spring, delay: 0.7 }}
+            className="mt-10 md:mt-12 md:ml-auto md:max-w-md"
+          >
+            <p className="text-white/50 text-lg md:text-xl leading-relaxed mb-8">
+              Diga seus objetivos. A IA cria, adapta e evolui o plano com você. Em segundos. De graça.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Link
+                to="/onboarding"
+                className="group flex items-center justify-center gap-2 bg-emerald-500 text-black px-8 py-4 rounded-md font-bold text-base hover:bg-emerald-400 transition-all active:scale-95 hover:scale-[1.02]"
+              >
+                Gerar Meu Plano
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1.5 transition-transform" />
+              </Link>
+              <Link
+                to="/login"
+                className="flex items-center justify-center px-8 py-4 border border-white/10 text-white/70 rounded-md font-semibold text-base hover:border-white/25 hover:text-white transition-all"
+              >
+                Já tenho conta
+              </Link>
+            </div>
+
+            {/* Trust */}
+            <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-white/30 text-xs font-medium uppercase tracking-wider">
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500/60" /> 100% gratuito
+              </span>
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500/60" /> Sem cartão
+              </span>
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500/60" /> 15 segundos
+              </span>
+            </div>
+          </motion.div>
+        </motion.div>
+
+        {/* Scroll indicator */}
         <motion.div
-          variants={stagger}
-          initial="initial"
-          animate="animate"
-          className="max-w-3xl mx-auto text-center relative z-10"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5 }}
+          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
         >
-          {/* Badge — social proof upfront */}
-          <motion.div variants={fadeUp} className="mb-8">
-            <span className="inline-flex items-center gap-2 py-1.5 px-4 rounded-full bg-primary/10 text-primary text-xs font-semibold border border-primary/20">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              +2.000 planos gerados esta semana
-            </span>
-          </motion.div>
-
-          {/* Headline — massive, emotional */}
-          <motion.h1
-            variants={fadeUp}
-            className="text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight mb-6 leading-[1.05]"
-          >
-            Seu treino ideal
-            <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-emerald-400 to-teal-400">
-              em 15 segundos.
-            </span>
-          </motion.h1>
-
-          {/* Sub — benefit focused, human */}
-          <motion.p
-            variants={fadeUp}
-            className="text-lg md:text-xl text-muted-foreground mb-10 max-w-xl mx-auto leading-relaxed"
-          >
-            Conte seus objetivos para a IA — ela cria um plano semanal completo, adapta a carga no seu ritmo e acompanha cada conquista.
-          </motion.p>
-
-          {/* CTA — one primary, one ghost */}
-          <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link
-              to="/onboarding"
-              className="group w-full sm:w-auto px-8 py-4 bg-primary text-primary-foreground rounded-2xl font-bold text-lg hover:bg-primary/90 transition-all shadow-xl shadow-primary/25 flex items-center justify-center gap-2"
-            >
-              Gerar Meu Plano
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link
-              to="/login"
-              className="w-full sm:w-auto px-8 py-4 bg-card text-foreground rounded-2xl font-bold text-lg hover:bg-card/80 transition-all border border-border flex items-center justify-center"
-            >
-              Já tenho conta
-            </Link>
-          </motion.div>
-
-          {/* Trust strip */}
-          <motion.div variants={fadeUp} className="mt-12 flex items-center justify-center gap-6 sm:gap-8 text-muted-foreground text-xs sm:text-sm font-medium">
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-primary" /> 100% Gratuito
-            </span>
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-primary" /> Sem cartão
-            </span>
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-primary" /> Plano em segundos
-            </span>
-          </motion.div>
+          <span className="text-[10px] uppercase tracking-[0.3em] text-white/20 font-medium">Scroll</span>
+          <motion.div
+            animate={{ y: [0, 8, 0] }}
+            transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
+            className="w-px h-10 bg-gradient-to-b from-white/20 to-transparent"
+          />
         </motion.div>
       </section>
 
-      {/* ═══════ SOCIAL PROOF STATS ═══════ */}
-      <section className="py-12 border-y border-border/50 bg-card/30">
-        <div className="max-w-4xl mx-auto px-5">
-          <div className="grid grid-cols-3 gap-4">
-            {stats.map((stat, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1, duration: 0.5 }}
-                className="text-center"
-              >
-                <div className="text-3xl sm:text-4xl font-extrabold text-foreground">{stat.value}</div>
-                <div className="text-xs sm:text-sm text-muted-foreground mt-1 font-medium">{stat.label}</div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════ FEATURES — não é grid genérico ═══════ */}
-      <section className="py-20 lg:py-28 px-5">
-        <div className="max-w-5xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Como funciona</h2>
-            <p className="text-muted-foreground max-w-lg mx-auto">
-              Três passos. Zero complicação. Resultado real.
-            </p>
-          </motion.div>
-
-          <div className="space-y-6">
-            {features.map((feat, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: i % 2 === 0 ? -30 : 30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, margin: '-50px' }}
-                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                className="group relative flex flex-col md:flex-row items-start md:items-center gap-5 p-6 md:p-8 rounded-2xl border border-border/50 bg-card/50 hover:border-primary/30 hover:bg-card transition-all duration-300"
-              >
-                {/* Step number */}
-                <div className="flex-shrink-0 flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br ${feat.gradient} border border-border/50">
-                  <span className="text-2xl font-extrabold text-primary">{i + 1}</span>
-                </div>
-
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold mb-1.5 flex items-center gap-2">
-                    <feat.icon className={`w-5 h-5 ${feat.iconColor}`} />
-                    {feat.title}
-                  </h3>
-                  <p className="text-muted-foreground leading-relaxed">{feat.description}</p>
-                </div>
-
-                <ArrowRight className="hidden md:block w-5 h-5 text-muted-foreground/30 group-hover:text-primary group-hover:translate-x-1 transition-all" />
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════ TESTIMONIALS — Social Proof ═══════ */}
-      <section className="py-20 bg-card/30 border-y border-border/50 px-5">
-        <div className="max-w-5xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-14"
-          >
-            <h2 className="text-3xl md:text-4xl font-bold mb-3">Quem usa, recomenda</h2>
-            <p className="text-muted-foreground">Resultados reais de pessoas reais.</p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-5">
-            {testimonials.map((t, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1, duration: 0.5 }}
-                className="bg-background border border-border/50 rounded-2xl p-6 hover:border-primary/20 transition-colors"
-              >
-                <div className="flex gap-0.5 mb-4">
-                  {Array.from({ length: t.stars }).map((_, j) => (
-                    <Star key={j} className="w-4 h-4 text-amber-400 fill-amber-400" />
-                  ))}
-                </div>
-                <p className="text-foreground mb-5 leading-relaxed text-sm">"{t.text}"</p>
-                <div className="flex items-center gap-3">
-                  <img src={t.avatar} alt={t.name} className="w-10 h-10 rounded-full object-cover" />
-                  <div>
-                    <div className="font-semibold text-sm">{t.name}</div>
-                    <div className="text-xs text-muted-foreground">{t.role}</div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════ FINAL CTA — Peak-End Rule ═══════ */}
-      <section className="py-24 px-5">
+      {/* ═══════════════════════════════════════════════════════
+          MARQUEE — Moving text strip
+          ═══════════════════════════════════════════════════════ */}
+      <div className="py-6 border-y border-white/5 overflow-hidden">
         <motion.div
-          initial={{ opacity: 0, scale: 0.96 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          className="max-w-3xl mx-auto relative overflow-hidden rounded-3xl"
+          animate={{ x: ['0%', '-50%'] }}
+          transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+          className="flex whitespace-nowrap gap-8 text-white/10 text-sm font-bold uppercase tracking-[0.3em]"
         >
-          {/* Gradient BG */}
-          <div className="absolute inset-0 bg-gradient-to-br from-brand-800 via-brand-900 to-brand-950" />
-          <div className="absolute top-0 right-0 w-80 h-80 bg-primary/20 rounded-full blur-[100px] -translate-y-1/3 translate-x-1/3" />
+          {Array.from({ length: 2 }).map((_, j) => (
+            <React.Fragment key={j}>
+              {['TREINO INTELIGENTE', '•', 'ADAPTAÇÃO REAL', '•', 'RESULTADOS COMPROVADOS', '•', 'CONQUISTAS', '•', 'PROGRESSÃO', '•', 'ZERO ESTAGNAÇÃO', '•'].map((t, i) => (
+                <span key={`${j}-${i}`} className={t === '•' ? 'text-emerald-500/30' : ''}>{t}</span>
+              ))}
+            </React.Fragment>
+          ))}
+        </motion.div>
+      </div>
 
-          <div className="relative z-10 p-10 md:p-16 text-center text-white">
-            <div className="text-5xl mb-5">🚀</div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
-              Pronto pra evoluir?
+      {/* ═══════════════════════════════════════════════════════
+          FEATURES — Staggered asymmetric cards
+          ═══════════════════════════════════════════════════════ */}
+      <section className="py-24 md:py-36 px-6">
+        <div className="max-w-6xl mx-auto">
+          <Reveal>
+            <span className="text-emerald-400 text-xs font-bold uppercase tracking-[0.3em] mb-4 block">Como Funciona</span>
+            <h2 className="font-['Outfit'] text-4xl md:text-6xl font-black tracking-tight leading-[1.05]">
+              Três passos.<br />
+              <span className="text-white/30">Zero complicação.</span>
             </h2>
-            <p className="text-brand-200 text-lg mb-8 max-w-md mx-auto">
-              Seu plano personalizado está a um clique. Sem pagamento, sem compromisso.
+          </Reveal>
+
+          <div className="mt-16 md:mt-24 space-y-6">
+            {features.map((feat, i) => (
+              <Reveal key={i} delay={i * 0.1}>
+                <motion.div
+                  whileHover={{ x: 8, transition: springBounce }}
+                  className="group relative border border-white/5 bg-white/[0.02] rounded-md p-8 md:p-10 flex flex-col md:flex-row gap-6 items-start hover:border-emerald-500/20 hover:bg-white/[0.04] transition-colors duration-500 cursor-default"
+                >
+                  {/* Number */}
+                  <span className="font-['Outfit'] text-[5rem] md:text-[7rem] font-black text-white/[0.04] leading-none absolute top-4 right-6 md:right-10 select-none group-hover:text-emerald-500/10 transition-colors duration-500">
+                    0{i + 1}
+                  </span>
+
+                  <div className="flex-shrink-0 flex items-center justify-center w-14 h-14 rounded-md border border-white/10 bg-white/[0.03] text-2xl group-hover:border-emerald-500/30 transition-colors">
+                    {feat.icon}
+                  </div>
+
+                  <div className="relative z-10 flex-1">
+                    <span className="text-emerald-400/60 text-[10px] font-bold uppercase tracking-[0.3em] mb-2 block">{feat.tag}</span>
+                    <h3 className="font-['Outfit'] text-xl md:text-2xl font-bold mb-2">{feat.title}</h3>
+                    <p className="text-white/40 leading-relaxed max-w-lg">{feat.desc}</p>
+                  </div>
+
+                  <ArrowRight className="hidden md:block w-5 h-5 text-white/10 group-hover:text-emerald-400 group-hover:translate-x-2 transition-all flex-shrink-0 mt-4" />
+                </motion.div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════
+          STATS — Large counter display
+          ═══════════════════════════════════════════════════════ */}
+      <section className="py-20 md:py-28 border-y border-white/5 px-6">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-12 md:gap-0">
+          {[
+            { value: '2.000+', label: 'Planos gerados', sub: 'e contando' },
+            { value: '98%', label: 'Satisfação', sub: 'dos usuários' },
+            { value: '<15s', label: 'Tempo de geração', sub: 'do seu plano' },
+          ].map((stat, i) => (
+            <Reveal key={i} delay={i * 0.1} className="text-center relative">
+              <div className="font-['Outfit'] text-5xl md:text-7xl font-black tracking-tight text-white">
+                {stat.value}
+              </div>
+              <div className="mt-2 text-white/40 text-sm font-medium">{stat.label}</div>
+              <div className="text-white/20 text-xs mt-0.5">{stat.sub}</div>
+              {i < 2 && <div className="hidden sm:block absolute right-0 top-1/2 -translate-y-1/2 w-px h-16 bg-white/5" />}
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════
+          TESTIMONIALS — Offset grid, NOT equal columns
+          ═══════════════════════════════════════════════════════ */}
+      <section className="py-24 md:py-36 px-6">
+        <div className="max-w-6xl mx-auto">
+          <Reveal>
+            <span className="text-emerald-400 text-xs font-bold uppercase tracking-[0.3em] mb-4 block">Depoimentos</span>
+            <h2 className="font-['Outfit'] text-4xl md:text-6xl font-black tracking-tight">
+              Quem treina,<br />
+              <span className="text-white/30">recomenda.</span>
+            </h2>
+          </Reveal>
+
+          <div className="mt-16 grid md:grid-cols-3 gap-4">
+            {testimonials.map((t, i) => (
+              <Reveal key={i} delay={i * 0.12}>
+                <motion.div
+                  whileHover={{ y: -6, transition: springBounce }}
+                  className={`relative border border-white/5 bg-white/[0.02] rounded-md p-7 hover:border-emerald-500/15 transition-colors duration-500 ${i === 1 ? 'md:mt-8' : ''}`}
+                >
+                  {/* Stars */}
+                  <div className="flex gap-0.5 mb-5">
+                    {Array.from({ length: 5 }).map((_, j) => (
+                      <Star key={j} className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400" />
+                    ))}
+                  </div>
+
+                  <p className="text-white/60 text-sm leading-relaxed mb-6">"{t.text}"</p>
+
+                  <div className="flex items-center gap-3 pt-5 border-t border-white/5">
+                    <img src={t.avatar} alt={t.name} className="w-9 h-9 rounded-md object-cover grayscale hover:grayscale-0 transition-all" />
+                    <div>
+                      <div className="text-sm font-bold">{t.name}</div>
+                      <div className="text-[11px] text-white/30">{t.role}</div>
+                    </div>
+                  </div>
+                </motion.div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════
+          FINAL CTA — Diagonal gradient, NOT centered card
+          ═══════════════════════════════════════════════════════ */}
+      <section className="relative overflow-hidden">
+        {/* Diagonal Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-950 via-[#0a1a12] to-[#0a0a0a]" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/10 blur-[200px] rounded-full pointer-events-none" />
+
+        <div className="relative z-10 max-w-7xl mx-auto px-6 py-28 md:py-40 flex flex-col md:flex-row items-start md:items-end justify-between gap-12">
+          <Reveal>
+            <span className="text-emerald-400/60 text-xs font-bold uppercase tracking-[0.3em] mb-6 block">Pronto?</span>
+            <h2 className="font-['Outfit'] text-5xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.95]">
+              Começa<br />
+              agora.
+            </h2>
+          </Reveal>
+
+          <Reveal delay={0.2} className="md:pb-4">
+            <p className="text-white/40 text-lg max-w-sm mb-8 leading-relaxed">
+              Seu plano personalizado está a um clique. Sem pagamento. Sem compromisso. Sem desculpa.
             </p>
             <Link
               to="/onboarding"
-              className="inline-flex items-center justify-center px-10 py-4 bg-white text-brand-900 rounded-2xl font-bold text-lg hover:bg-brand-50 transition-all hover:scale-[1.02] shadow-xl"
+              className="group inline-flex items-center gap-3 bg-emerald-500 text-black px-10 py-5 rounded-md font-bold text-lg hover:bg-emerald-400 transition-all active:scale-95 hover:scale-[1.02]"
             >
-              Começar Agora — É Grátis
+              Começar — É Grátis
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
             </Link>
-            <p className="mt-5 text-brand-300 text-sm">
-              Leva menos de 1 minuto para criar sua conta.
-            </p>
-          </div>
-        </motion.div>
+            <p className="mt-5 text-white/20 text-xs">Menos de 1 minuto para criar sua conta.</p>
+          </Reveal>
+        </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-10 border-t border-border/50 text-center px-5">
-        <div className="flex items-center justify-center gap-2 mb-3">
-          <Logo className="h-6 w-auto opacity-60" />
-          <span className="text-sm font-semibold text-muted-foreground">LevelUp<span className="text-primary">.AI</span></span>
+      {/* ═══ FOOTER ═══ */}
+      <footer className="py-10 border-t border-white/5 text-center px-6">
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <Logo className="h-5 w-auto opacity-40" />
+          <span className="text-xs font-semibold text-white/30">LEVELUP<span className="text-emerald-500/40">.AI</span></span>
         </div>
-        <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} LevelUp Fitness AI. Todos os direitos reservados.</p>
+        <p className="text-[10px] text-white/15 uppercase tracking-widest">© {new Date().getFullYear()} Todos os direitos reservados</p>
       </footer>
     </div>
   );
