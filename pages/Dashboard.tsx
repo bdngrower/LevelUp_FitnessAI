@@ -10,6 +10,7 @@ import { pageVariants, containerStagger, itemFadeUp, cardHover } from '../utils/
 import { Button } from '../components/ui/Button';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../components/ui/Card';
 import { Skeleton } from '../components/ui/Skeleton';
+import { LoadingScreen } from '../components/LoadingScreen';
 import { cn } from '../utils/cn';
 import { dicasPro } from '../data/tips';
 import { WeekCompleteModal } from '../components/WeekCompleteModal';
@@ -110,22 +111,7 @@ export const Dashboard: React.FC = () => {
     }, [logs, plan]);
 
     if (initializing || !profile) {
-        return (
-            <div className="p-6 space-y-6 max-w-5xl mx-auto">
-                <div className="flex justify-between items-center mb-6">
-                    <div className="space-y-2">
-                        <Skeleton className="h-8 w-48 rounded-lg" />
-                        <Skeleton className="h-4 w-32 rounded-lg" />
-                    </div>
-                    <Skeleton className="h-10 w-24 rounded-full" />
-                </div>
-                <Skeleton className="h-72 w-full rounded-3xl" />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                    <Skeleton className="h-32 rounded-2xl" />
-                    <Skeleton className="h-32 rounded-2xl" />
-                </div>
-            </div>
-        )
+        return <LoadingScreen />;
     }
 
     const tdee = calculateTDEE(profile);

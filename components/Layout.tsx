@@ -83,12 +83,6 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     );
   };
 
-  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      alert("Busca global em breve!");
-    }
-  }
-
   if (!isAuth) {
     return (
       <div className="flex flex-col h-screen bg-background text-foreground overflow-hidden font-sans">
@@ -157,15 +151,6 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
             {/* Actions */}
             <div className="flex items-center gap-3 md:gap-4 ml-auto">
-              <div className="relative hidden sm:block group">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                <input
-                  type="text"
-                  placeholder="Buscar..."
-                  className="h-10 w-48 md:w-64 rounded-full border border-input bg-secondary/50 focus:bg-background pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-muted-foreground/70"
-                  onKeyDown={handleSearch}
-                />
-              </div>
 
               <button className="relative p-2.5 rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground transition-all active:scale-95">
                 <span className="absolute top-2.5 right-3 w-2 h-2 bg-primary rounded-full ring-2 ring-background"></span>

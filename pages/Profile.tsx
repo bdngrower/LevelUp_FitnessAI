@@ -10,6 +10,7 @@ import { Card, CardContent } from '../components/ui/Card';
 import { LogOut, ChevronRight, UserIcon, Settings, TrendingUp, Calendar, Dumbbell } from '../components/Icons';
 import { Button } from '../components/ui/Button';
 import { Skeleton } from '../components/ui/Skeleton';
+import { LoadingScreen } from '../components/LoadingScreen';
 import { cn } from '../utils/cn';
 
 const MotionCard = motion(Card);
@@ -91,28 +92,7 @@ export const Profile: React.FC = () => {
         navigate('/');
     }
 
-    if (!profile) return (
-        <div className="p-4 md:p-8 pb-24 max-w-3xl mx-auto space-y-6">
-            <div className="bg-card rounded-3xl border border-border/60 p-6 flex flex-col items-center gap-4">
-                <Skeleton className="w-24 h-24 rounded-full" />
-                <Skeleton className="h-6 w-40 rounded-lg" />
-                <div className="flex gap-2">
-                    <Skeleton className="h-6 w-24 rounded-full" />
-                    <Skeleton className="h-6 w-24 rounded-full" />
-                </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-                <Skeleton className="h-28 rounded-2xl" />
-                <Skeleton className="h-28 rounded-2xl" />
-                <Skeleton className="h-28 rounded-2xl" />
-                <Skeleton className="h-28 rounded-2xl" />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Skeleton className="h-44 rounded-2xl" />
-                <Skeleton className="h-44 rounded-2xl" />
-            </div>
-        </div>
-    );
+    if (!profile) return <LoadingScreen />;
 
     const experienceLabel = profile.experience === 'beginner' ? 'Iniciante' : profile.experience === 'intermediate' ? 'Intermediário' : 'Avançado';
 

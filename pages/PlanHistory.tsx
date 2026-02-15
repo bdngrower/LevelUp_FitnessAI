@@ -8,6 +8,7 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Calendar, CheckCircle, Clock, HistoryIcon, ArrowRight, RefreshCw } from '../components/Icons';
 import { Skeleton } from '../components/ui/Skeleton';
+import { LoadingScreen } from '../components/LoadingScreen';
 
 export const PlanHistory: React.FC = () => {
     const [history, setHistory] = useState<WeeklyPlan[]>([]);
@@ -46,16 +47,7 @@ export const PlanHistory: React.FC = () => {
     };
 
     if (loading) {
-        return (
-            <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-8 animate-pulse">
-                <Skeleton className="h-10 w-48 rounded-lg" />
-                <div className="space-y-4">
-                    <Skeleton className="h-32 w-full rounded-2xl" />
-                    <Skeleton className="h-24 w-full rounded-xl" />
-                    <Skeleton className="h-24 w-full rounded-xl" />
-                </div>
-            </div>
-        );
+        return <LoadingScreen />;
     }
 
     return (
