@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
-import { Dumbbell, TrendingUp, Calendar, UserIcon, Settings, Search, Menu, HistoryIcon, LogOut } from './Icons';
+import { Dumbbell, TrendingUp, Calendar, UserIcon, Settings, Menu, HistoryIcon, LogOut } from './Icons';
+import { NotificationPanel } from './NotificationPanel';
 import { Logo } from './Logo';
 import { cn } from '../utils/cn';
 import { StorageService } from '../services/storage';
@@ -152,10 +153,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             {/* Actions */}
             <div className="flex items-center gap-3 md:gap-4 ml-auto">
 
-              <button className="relative p-2.5 rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground transition-all active:scale-95">
-                <span className="absolute top-2.5 right-3 w-2 h-2 bg-primary rounded-full ring-2 ring-background"></span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
-              </button>
+              <NotificationPanel />
 
               <div className="hidden lg:flex items-center gap-3 pl-2 border-l border-border/50">
                 <div className="text-right hidden xl:block">
