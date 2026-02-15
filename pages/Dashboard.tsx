@@ -191,14 +191,14 @@ export const Dashboard: React.FC = () => {
                 </div>
 
                 {/* Weekly Progress Widget */}
-                <div className="bg-card border border-border/50 rounded-2xl p-4 w-full md:w-auto min-w-[280px] shadow-sm">
+                <div className="bg-card/40 backdrop-blur-xl border border-white/5 rounded-2xl p-4 w-full md:w-auto min-w-[280px] shadow-lg shadow-black/5">
                     <div className="flex justify-between items-center mb-2">
                         <span className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Meta Semanal</span>
                         <span className="text-sm font-bold text-primary">{workoutsThisWeek}/{profile.daysPerWeek}</span>
                     </div>
-                    <div className="h-2.5 w-full bg-secondary rounded-full overflow-hidden">
+                    <div className="h-2.5 w-full bg-secondary/50 rounded-full overflow-hidden">
                         <motion.div
-                            className="h-full bg-primary rounded-full"
+                            className="h-full bg-primary rounded-full shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]"
                             initial={{ width: 0 }}
                             animate={{ width: `${progressPercentage}%` }}
                             transition={{ duration: 1, ease: "easeOut" }}
@@ -252,16 +252,16 @@ export const Dashboard: React.FC = () => {
 
                     {/* Hero Card - Next Workout */}
                     {!plan ? (
-                        <Card className="border-dashed border-2 bg-secondary/20 border-border">
+                        <Card className="border-dashed border-2 bg-secondary/20 border-border/50 backdrop-blur-sm">
                             <CardContent className="flex flex-col items-center justify-center py-12 md:py-16 text-center">
-                                <div className="bg-primary/10 p-4 md:p-5 rounded-full mb-4 md:mb-6">
+                                <div className="bg-primary/10 p-4 md:p-5 rounded-full mb-4 md:mb-6 ring-1 ring-primary/20">
                                     <Play className="w-8 h-8 md:w-10 md:h-10 text-primary" />
                                 </div>
                                 <h3 className="text-lg md:text-xl font-bold mb-2">Nenhum plano ativo</h3>
                                 <p className="text-muted-foreground max-w-sm mb-6 md:mb-8 text-sm leading-relaxed px-4">
                                     A IA do LevelUp pode criar uma rotina personalizada para você agora mesmo.
                                 </p>
-                                <Button onClick={handleGeneratePlan} isLoading={loading} size="lg" className="px-8 shadow-glow w-full md:w-auto">
+                                <Button onClick={handleGeneratePlan} isLoading={loading} size="lg" className="px-8 shadow-lg shadow-primary/20 w-full md:w-auto">
                                     Gerar Plano Inteligente
                                 </Button>
                             </CardContent>
@@ -270,7 +270,7 @@ export const Dashboard: React.FC = () => {
                         <motion.div
                             whileHover={cardHover}
                             onClick={() => navigate(`/workout/${nextDayIndex}`)}
-                            className="cursor-pointer group relative h-[400px] md:h-[360px] rounded-3xl overflow-hidden shadow-2xl shadow-primary/5 ring-1 ring-white/10"
+                            className="cursor-pointer group relative h-[400px] md:h-[360px] rounded-3xl overflow-hidden shadow-2xl shadow-black/20 ring-1 ring-white/10"
                         >
                             {/* Video Background */}
                             {nextWorkout?.exercises?.[0]?.name && (
@@ -292,7 +292,7 @@ export const Dashboard: React.FC = () => {
 
                             <div className="absolute inset-0 p-6 md:p-8 flex flex-col justify-end md:justify-between z-10">
                                 <div className="hidden md:flex justify-between items-start">
-                                    <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-full text-xs font-bold text-white uppercase tracking-wider">
+                                    <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-full text-xs font-bold text-white uppercase tracking-wider shadow-sm">
                                         <Play className="w-3 h-3 fill-current" /> Próximo Treino
                                     </div>
                                 </div>
@@ -345,10 +345,10 @@ export const Dashboard: React.FC = () => {
                 <div className="md:col-span-12 lg:col-span-4 space-y-6">
 
                     {/* Pro Tip Widget */}
-                    <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl p-5 border border-primary/20 relative overflow-hidden">
+                    <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl p-5 border border-primary/20 relative overflow-hidden backdrop-blur-sm">
                         <div className="relative z-10">
                             <div className="inline-flex items-center gap-2 mb-2">
-                                <span className="bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase">Dica Pro</span>
+                                <span className="bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase shadow-sm">Dica Pro</span>
                             </div>
                             <p className="text-sm text-foreground/80 font-medium leading-relaxed italic">
                                 "{randomTip}"
@@ -360,13 +360,13 @@ export const Dashboard: React.FC = () => {
                     </div>
 
                     {/* Activity Feed */}
-                    <Card className="border-border/60 shadow-sm">
-                        <CardHeader className="pb-4 border-b border-border/40 px-5 pt-5">
+                    <Card className="bg-card/40 backdrop-blur-xl border border-white/5 shadow-lg shadow-black/5">
+                        <CardHeader className="pb-4 border-b border-white/5 px-5 pt-5">
                             <div className="flex justify-between items-center">
                                 <CardTitle className="text-base font-bold flex items-center gap-2">
                                     <HistoryIcon className="w-4 h-4 text-primary" /> Histórico Recente
                                 </CardTitle>
-                                <Button variant="ghost" size="sm" onClick={() => navigate('/progress')} className="h-8 text-xs hover:bg-secondary">
+                                <Button variant="ghost" size="sm" onClick={() => navigate('/progress')} className="h-8 text-xs hover:bg-white/5">
                                     Ver tudo
                                 </Button>
                             </div>
@@ -380,9 +380,9 @@ export const Dashboard: React.FC = () => {
                                     <p className="text-sm text-muted-foreground font-medium">Bora treinar hoje?</p>
                                 </div>
                             ) : (
-                                <div className="divide-y divide-border/40">
+                                <div className="divide-y divide-white/5">
                                     {history.slice(0, 5).map((item) => (
-                                        <div key={item.id} className="flex items-center gap-4 p-4 hover:bg-secondary/30 transition-colors">
+                                        <div key={item.id} className="flex items-center gap-4 p-4 hover:bg-white/5 transition-colors">
                                             <div className={cn("p-2.5 rounded-xl shrink-0 border border-transparent shadow-sm",
                                                 item.type === 'workout' ? 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20' :
                                                     item.type === 'weight' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20' :
