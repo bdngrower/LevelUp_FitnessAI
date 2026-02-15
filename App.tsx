@@ -127,6 +127,14 @@ const AnimatedRoutes = () => {
                     </ProtectedRoute>
                 } />
 
+                <Route path="/history" element={
+                    <ProtectedRoute>
+                        <ProfileCheck>
+                            <PlanHistory />
+                        </ProfileCheck>
+                    </ProtectedRoute>
+                } />
+
                 {/* Fallback Route */}
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

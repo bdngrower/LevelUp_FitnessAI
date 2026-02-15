@@ -39,6 +39,10 @@ export const ActiveWorkout: React.FC = () => {
   const [showDetails, setShowDetails] = useState(false);
   const [videoError, setVideoError] = useState(false);
 
+  // Summary & Share state
+  const [showSummary, setShowSummary] = useState(false);
+  const [summaryData, setSummaryData] = useState<{ duration: number; exercises: number; volume: number } | null>(null);
+
   // Load Profile & Plan
   useEffect(() => {
     const loadData = async () => {
@@ -230,7 +234,28 @@ export const ActiveWorkout: React.FC = () => {
       completedExercises: sessionLogs
     });
 
-    navigate('/');
+    // Calculate total volume
+    const totalVolume = sessionLogs.reduce((sum, log) => {
+      return sum + log.sets.reduce((s, set) => s + (set.weight * set.reps), 0);
+    }, 0);
+
+    setSummaryData({ duration, exercises: sessionLogs.length, volume: Math.round(totalVolume) });
+    setShowSummary(true);
+  };
+
+  const handleShare = async () => {
+    if (!summaryData || !day) return;
+    const text = `💪 Treino concluído no LevelUp!\n\n🏋️ ${day.focus}\n⏱️ ${summaryData.duration}min\n🎯 ${summaryData.exercises} exercícios\n🔥 ${summaryData.volume}kg de volume total\n\n#LevelUpFitness #Treino`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'LevelUp Fitness', text });
+      } else {
+        await navigator.clipboard.writeText(text);
+        alert('Texto copiado! Cole nas suas redes sociais.');
+      }
+    } catch (err) {
+      // user cancelled
+    }
   };
 
   const adjustWeight = (amount: number) => {
@@ -253,6 +278,65 @@ export const ActiveWorkout: React.FC = () => {
       exit="exit"
       variants={pageVariants}
     >
+      {/* Workout Summary Modal */}
+      <AnimatePresence>
+        {showSummary && summaryData && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="w-full max-w-sm bg-card rounded-3xl overflow-hidden shadow-2xl border border-border"
+            >
+              {/* Gradient Header */}
+              <div className="bg-gradient-to-br from-primary via-emerald-500 to-teal-500 p-8 text-center text-white">
+                <div className="text-5xl mb-3">🏆</div>
+                <h2 className="text-2xl font-black">Treino Concluído!</h2>
+                <p className="text-white/80 text-sm mt-1">{day?.focus}</p>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-0 divide-x divide-border border-b border-border">
+                <div className="p-5 text-center">
+                  <div className="text-2xl font-black text-foreground">{summaryData.duration}</div>
+                  <div className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider mt-1">Minutos</div>
+                </div>
+                <div className="p-5 text-center">
+                  <div className="text-2xl font-black text-foreground">{summaryData.exercises}</div>
+                  <div className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider mt-1">Exercícios</div>
+                </div>
+                <div className="p-5 text-center">
+                  <div className="text-2xl font-black text-primary">{summaryData.volume.toLocaleString()}</div>
+                  <div className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider mt-1">kg Volume</div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="p-5 space-y-3">
+                <button
+                  onClick={handleShare}
+                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-500 to-violet-500 text-white font-bold text-sm shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
+                  Compartilhar Treino
+                </button>
+                <button
+                  onClick={() => navigate('/')}
+                  className="w-full py-4 rounded-2xl bg-secondary text-foreground font-bold text-sm hover:bg-muted transition-colors"
+                >
+                  Voltar ao Início
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Top Bar */}
       <div className="h-14 bg-card flex items-center justify-between px-4 border-b border-border shrink-0 z-10 shadow-sm relative">
         <div className="flex items-center gap-4">
@@ -263,9 +347,31 @@ export const ActiveWorkout: React.FC = () => {
 
         <div className="font-bold text-foreground truncate max-w-[150px] text-sm absolute left-1/2 -translate-x-1/2">{day.focus}</div>
 
-        {/* Small Top Timer Status */}
-        <div className={`text-sm font-mono font-bold px-3 py-1 rounded-full transition-all ${isTimerRunning ? (isTimerFinished ? 'bg-green-500 text-white animate-pulse' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400') : 'bg-secondary text-muted-foreground'}`}>
-          {String(Math.floor(timerRemaining / 60)).padStart(2, '0')}:{String(timerRemaining % 60).padStart(2, '0')}
+        <div className="flex items-center gap-2">
+          {/* Playlist Links */}
+          <a
+            href="https://open.spotify.com/genre/workout-page"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-8 h-8 rounded-full bg-[#1DB954]/10 hover:bg-[#1DB954]/20 flex items-center justify-center transition-colors"
+            title="Abrir Spotify"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" /></svg>
+          </a>
+          <a
+            href="https://music.apple.com/search?term=workout+playlist"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-8 h-8 rounded-full bg-[#FC3C44]/10 hover:bg-[#FC3C44]/20 flex items-center justify-center transition-colors"
+            title="Abrir Apple Music"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="#FC3C44"><path d="M23.994 6.124a9.23 9.23 0 00-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043A5.022 5.022 0 0019.7.25a10.38 10.38 0 00-1.667-.2C17.185.017 16.337 0 13.848 0h-3.7c-2.5 0-3.34.018-4.193.056a10.1 10.1 0 00-1.645.2A5.02 5.02 0 002.4.9C1.28 1.632.536 2.632.22 3.942a9.1 9.1 0 00-.2 1.69C-.014 6.482 0 7.33 0 9.82v4.36c0 2.49.014 3.34.053 4.19a9.1 9.1 0 00.2 1.69c.316 1.3 1.06 2.3 2.18 3.04a5 5 0 001.907.64c.55.115 1.1.17 1.667.2.85.038 1.7.056 4.19.056h3.7c2.5 0 3.34-.018 4.19-.056a10.1 10.1 0 001.645-.2 5 5 0 001.907-.64c1.12-.74 1.864-1.74 2.18-3.04a9.23 9.23 0 00.24-2.19c.038-.85.056-1.7.056-4.19V9.82c-.018-2.49-.036-3.34-.074-4.19zM17.886 16.4c0 .65-.234 1.19-.662 1.55-.386.33-.863.48-1.39.48a2.03 2.03 0 01-.57-.08 2.27 2.27 0 01-1.49-1.37 2.2 2.2 0 01-.16-.77c0-.65.23-1.19.66-1.55.386-.33.864-.48 1.39-.48.19 0 .38.03.57.08.653.19 1.13.61 1.49 1.37.1.24.16.51.16.77zM17.5 10.63v.004l-6.5 1.406V16.4c0 .65-.234 1.19-.662 1.55-.386.33-.863.48-1.39.48a2.03 2.03 0 01-.57-.08 2.27 2.27 0 01-1.49-1.37 2.2 2.2 0 01-.16-.77c0-.65.23-1.19.66-1.55.386-.33.864-.48 1.39-.48.19 0 .38.03.57.08.376.11.7.32.967.61V8.364l6.5-1.41v3.674z" /></svg>
+          </a>
+
+          {/* Timer */}
+          <div className={`text-sm font-mono font-bold px-3 py-1 rounded-full transition-all ${isTimerRunning ? (isTimerFinished ? 'bg-green-500 text-white animate-pulse' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400') : 'bg-secondary text-muted-foreground'}`}>
+            {String(Math.floor(timerRemaining / 60)).padStart(2, '0')}:{String(timerRemaining % 60).padStart(2, '0')}
+          </div>
         </div>
       </div>
 

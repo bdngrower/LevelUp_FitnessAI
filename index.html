@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>LevelUp Fitness AI - Treino Inteligente</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/logo.png">
+    <meta name="theme-color" content="#22c55e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="Treino inteligente com IA — seu personal trainer no bolso.">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       // Process shim to prevent crashes in libs that expect Node environment variables
@@ -166,5 +172,12 @@
   <body class="bg-background text-foreground antialiased selection:bg-brand-500 selection:text-white">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
   </body>
 </html>

@@ -1,0 +1,23 @@
+{
+    "name": "LevelUp Fitness AI",
+    "short_name": "LevelUp",
+    "description": "Treino inteligente com IA — seu personal trainer no bolso.",
+    "start_url": "/",
+    "display": "standalone",
+    "orientation": "portrait",
+    "theme_color": "#22c55e",
+    "background_color": "#f8fafc",
+    "icons": [
+        {
+            "src": "/logo.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": [
+        "fitness",
+        "health"
+    ],
+    "lang": "pt-BR"
+}

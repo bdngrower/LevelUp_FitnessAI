@@ -157,17 +157,123 @@ const generateNotifications = async (): Promise<Notification[]> => {
             icon: '💡',
         });
 
-        // 5. Welcome or milestone
-        if (logs.length >= 10 && logs.length < 12) {
-            notifications.push({
-                id: 'milestone-10',
-                type: 'achievement',
-                title: '10 Treinos Completos! 🎉',
-                message: 'Você está criando um hábito sólido. Continue assim!',
-                time: 'Conquista',
-                read: false,
-                icon: '🏆',
-            });
+        // ===== ACHIEVEMENT SYSTEM =====
+        if (logs.length > 0) {
+            // A. Total Volume (weight × reps × sets)
+            const totalVolume = logs.reduce((sum, log) => {
+                return sum + log.completedExercises.reduce((s, ex) => {
+                    return s + (ex.weightUsed * ex.repsCompleted * ex.setsCompleted);
+                }, 0);
+            }, 0);
+
+            const volumeMilestones = [
+                { threshold: 50000, label: '50.000kg', emoji: '🌋' },
+                { threshold: 25000, label: '25.000kg', emoji: '🏔️' },
+                { threshold: 10000, label: '10.000kg', emoji: '🚀' },
+                { threshold: 5000, label: '5.000kg', emoji: '💎' },
+                { threshold: 1000, label: '1.000kg', emoji: '🔥' },
+                { threshold: 500, label: '500kg', emoji: '💪' },
+            ];
+
+            for (const m of volumeMilestones) {
+                if (totalVolume >= m.threshold) {
+                    notifications.push({
+                        id: `volume-${m.threshold}`,
+                        type: 'achievement',
+                        title: `${m.emoji} ${m.label} Levantados!`,
+                        message: `Você já moveu ${Math.round(totalVolume).toLocaleString()}kg no total. Máquina!`,
+                        time: 'Conquista',
+                        read: true,
+                        icon: '🏋️',
+                    });
+                    break; // Show only the highest milestone
+                }
+            }
+
+            // B. Consecutive Day Streak
+            const sortedDates = [...new Set(
+                logs.map(l => new Date(l.date).toISOString().split('T')[0])
+            )].sort().reverse();
+
+            let streak = 1;
+            const today = now.toISOString().split('T')[0];
+            const yesterday = new Date(now.getTime() - 86400000).toISOString().split('T')[0];
+
+            if (sortedDates[0] === today || sortedDates[0] === yesterday) {
+                for (let i = 1; i < sortedDates.length; i++) {
+                    const curr = new Date(sortedDates[i - 1]);
+                    const prev = new Date(sortedDates[i]);
+                    const diff = Math.round((curr.getTime() - prev.getTime()) / 86400000);
+                    if (diff === 1) {
+                        streak++;
+                    } else {
+                        break;
+                    }
+                }
+
+                if (streak >= 3) {
+                    notifications.push({
+                        id: `streak-${streak}`,
+                        type: 'streak',
+                        title: `🔥 ${streak} Dias Seguidos!`,
+                        message: streak >= 30 ? 'Você é imparável! Lendário!' :
+                            streak >= 14 ? 'Duas semanas sem falha! Impressionante!' :
+                                streak >= 7 ? 'Uma semana inteira! Consistência é tudo!' :
+                                    'Mantendo o ritmo! Continue assim!',
+                        time: 'Conquista',
+                        read: false,
+                        icon: '🔥',
+                    });
+                }
+            }
+
+            // C. Total Workouts Milestones
+            const workoutMilestones = [
+                { count: 100, msg: 'Centenário! Você é uma lenda da academia!' },
+                { count: 50, msg: '50 treinos! Meio caminho para 100!' },
+                { count: 25, msg: '25 treinos completos! O hábito está formado!' },
+                { count: 10, msg: '10 treinos! Você está criando uma rotina sólida!' },
+                { count: 5, msg: '5 treinos no bolso! Bom começo!' },
+            ];
+
+            for (const m of workoutMilestones) {
+                if (logs.length >= m.count) {
+                    notifications.push({
+                        id: `workouts-${m.count}`,
+                        type: 'achievement',
+                        title: `🎯 ${m.count} Treinos Completos!`,
+                        message: m.msg,
+                        time: 'Conquista',
+                        read: true,
+                        icon: '🏅',
+                    });
+                    break; // Show only the highest
+                }
+            }
+
+            // D. Total Training Hours
+            const totalMinutes = logs.reduce((sum, l) => sum + (l.durationMinutes || 0), 0);
+            const totalHours = Math.floor(totalMinutes / 60);
+
+            if (totalHours >= 1) {
+                const hourMilestones = [100, 50, 25, 10, 5, 1];
+                for (const h of hourMilestones) {
+                    if (totalHours >= h) {
+                        notifications.push({
+                            id: `hours-${h}`,
+                            type: 'achievement',
+                            title: `⏱️ ${totalHours}h de Treino!`,
+                            message: totalHours >= 50 ? 'Dedicação de atleta profissional!' :
+                                totalHours >= 10 ? 'Horas e horas de evolução!' :
+                                    'Cada hora conta na sua transformação!',
+                            time: 'Conquista',
+                            read: true,
+                            icon: '⏱️',
+                        });
+                        break;
+                    }
+                }
+            }
         }
     } catch (err) {
         console.error('Error generating notifications:', err);
