@@ -2,30 +2,52 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { DbService } from '../services/db';
-import { WeeklyPlan } from '../types';
+import { WeeklyPlan, UserProfile } from '../types';
 import { pageVariants, containerStagger, itemFadeUp, cardHover } from '../utils/motion';
 import { Card } from '../components/ui/Card';
 import { Clock, Dumbbell, Play, Flame, Calendar, ChevronRight } from '../components/Icons';
 import { Button } from '../components/ui/Button';
+import { generateWorkoutPlan } from '../services/aiPlanner'; // Import added
 
 import { Skeleton } from '../components/ui/Skeleton';
 
 export const WorkoutPlan: React.FC = () => {
     const [plan, setPlan] = useState<WeeklyPlan | null>(null);
+    const [profile, setProfile] = useState<any | null>(null);
     const [loading, setLoading] = useState(true);
+    const [generating, setGenerating] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchPlan = async () => {
+        const fetchData = async () => {
             try {
-                const p = await DbService.getPlan();
+                const [p, u] = await Promise.all([
+                    DbService.getPlan(),
+                    DbService.getProfile()
+                ]);
                 setPlan(p);
+                setProfile(u);
             } finally {
                 setLoading(false);
             }
         };
-        fetchPlan();
+        fetchData();
     }, []);
+
+    const handleRegenerate = async () => {
+        if (!profile) return;
+        setGenerating(true);
+        try {
+            const newPlan = await generateWorkoutPlan(profile, "Reajuste de frequência semanal", []);
+            await DbService.savePlan(newPlan);
+            setPlan(newPlan);
+        } catch (error) {
+            console.error(error);
+            alert("Erro ao regenerar plano. Tente novamente.");
+        } finally {
+            setGenerating(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -76,6 +98,29 @@ export const WorkoutPlan: React.FC = () => {
             variants={pageVariants}
         >
             <div className="mb-10">
+                {plan && profile && plan.days.length !== profile.daysPerWeek && (
+                    <div className="mb-8 bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4 md:p-5 flex flex-col md:flex-row items-center justify-between gap-4 animate-fade-in">
+                        <div className="flex items-center gap-4 w-full md:w-auto">
+                            <div className="p-3 bg-yellow-500/20 rounded-full text-yellow-600 dark:text-yellow-400 shrink-0">
+                                <Calendar className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-yellow-600 dark:text-yellow-400 text-lg">Ajuste de Frequência Necessário</h4>
+                                <p className="text-sm text-yellow-600/80 dark:text-yellow-400/80">
+                                    Seu perfil mudou para <strong>{profile.daysPerWeek} dias/semana</strong>, mas este plano tem <strong>{plan.days.length} dias</strong>.
+                                </p>
+                            </div>
+                        </div>
+                        <Button
+                            onClick={handleRegenerate}
+                            isLoading={generating}
+                            className="w-full md:w-auto bg-yellow-500 hover:bg-yellow-600 text-black border-none font-bold shadow-lg shadow-yellow-500/20 whitespace-nowrap"
+                        >
+                            Regenerar Plano ({profile.daysPerWeek} dias)
+                        </Button>
+                    </div>
+                )}
+
                 <h2 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight mb-2">Agenda de Treinos</h2>
                 <p className="text-muted-foreground font-medium text-lg">
                     Seu plano atual tem <span className="text-primary font-bold">{plan.days.length} dias</span> de atividade por semana.
