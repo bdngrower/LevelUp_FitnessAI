@@ -29,6 +29,9 @@ self.addEventListener('fetch', (event) => {
     const { request } = event;
     const url = new URL(request.url);
 
+    // 0. Ignore non-GET requests (POST, PUT, DELETE, etc.)
+    if (request.method !== 'GET') return;
+
     // 1. Navigation (HTML) & API -> Network First
     // Ensures we always get the latest index.html (with new asset hashes)
     if (request.mode === 'navigate' || url.pathname === '/' || url.pathname === '/index.html' || url.pathname.startsWith('/api')) {
