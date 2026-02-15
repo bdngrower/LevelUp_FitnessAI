@@ -165,8 +165,8 @@ export const Profile: React.FC = () => {
             <motion.div variants={containerStagger} className="grid grid-cols-2 gap-3">
                 {statCards.map((stat, i) => (
                     <MotionCard key={stat.label} variants={itemFadeUp} className="hover:border-primary/20 transition-colors">
-                        <CardContent className="p-4">
-                            <div className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest mb-1.5">{stat.label}</div>
+                        <CardContent className="p-5">
+                            <div className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest mb-2">{stat.label}</div>
                             <div className="flex items-baseline gap-1">
                                 <span className={cn("text-2xl font-black", stat.color)}>{stat.value}</span>
                                 <span className="text-xs font-bold text-muted-foreground">{stat.unit}</span>
@@ -179,7 +179,7 @@ export const Profile: React.FC = () => {
             {/* Body & Preferences */}
             <motion.div variants={containerStagger} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <MotionCard variants={itemFadeUp} className="overflow-hidden border-border/60">
-                    <div className="px-4 pt-4 pb-2">
+                    <div className="px-5 pt-5 pb-2">
                         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Dados Corporais</h3>
                     </div>
                     <div className="divide-y divide-border/40">
@@ -190,7 +190,7 @@ export const Profile: React.FC = () => {
                 </MotionCard>
 
                 <MotionCard variants={itemFadeUp} className="overflow-hidden border-border/60">
-                    <div className="px-4 pt-4 pb-2">
+                    <div className="px-5 pt-5 pb-2">
                         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Preferências de Treino</h3>
                     </div>
                     <div className="divide-y divide-border/40">
@@ -208,7 +208,7 @@ export const Profile: React.FC = () => {
                     className="cursor-pointer hover:border-primary/30 transition-all group"
                     onClick={() => navigate('/onboarding')}
                 >
-                    <CardContent className="p-4 flex items-center justify-between">
+                    <CardContent className="p-5 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="bg-primary/10 p-2 rounded-lg text-primary group-hover:bg-primary/20 transition-colors">
                                 <UserIcon className="w-5 h-5" />
@@ -224,7 +224,7 @@ export const Profile: React.FC = () => {
                     className="cursor-pointer hover:border-destructive/30 transition-all group"
                     onClick={handleLogout}
                 >
-                    <CardContent className="p-4 flex items-center justify-between">
+                    <CardContent className="p-5 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="bg-destructive/10 p-2 rounded-lg text-destructive group-hover:bg-destructive/20 transition-colors">
                                 <LogOut className="w-5 h-5" />
@@ -246,7 +246,7 @@ export const Profile: React.FC = () => {
 };
 
 const ProfileItem = ({ label, value }: { label: string, value: string | number }) => (
-    <div className="flex justify-between items-center px-4 py-3 hover:bg-secondary/50 dark:hover:bg-white/5 transition-colors">
+    <div className="flex justify-between items-center px-5 py-3.5 hover:bg-secondary/50 dark:hover:bg-white/5 transition-colors">
         <span className="text-sm font-medium text-foreground/70">{label}</span>
         <span className="text-sm font-bold text-foreground capitalize">{value}</span>
     </div>
