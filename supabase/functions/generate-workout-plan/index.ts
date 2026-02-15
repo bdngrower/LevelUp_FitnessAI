@@ -127,17 +127,34 @@ function validateUserProfile(user: UserProfile): void {
     throw new Error("Perfil de usuário não fornecido");
   }
 
-  if (!user.daysPerWeek || user.daysPerWeek < 3 || user.daysPerWeek > 6) {
-    throw new Error("Dias por semana deve ser entre 3 e 6");
+  // Relaxed validation to match UI (1-7 days)
+  if (!user.daysPerWeek || user.daysPerWeek < 1 || user.daysPerWeek > 7) {
+    throw new Error("Dias por semana deve ser entre 1 e 7");
   }
 
-  if (user.timePerWorkout && (user.timePerWorkout < 30 || user.timePerWorkout > 120)) {
-    throw new Error("Tempo por treino deve ser entre 30 e 120 minutos");
+  if (user.timePerWorkout && (user.timePerWorkout < 15 || user.timePerWorkout > 180)) {
+    throw new Error("Tempo por treino deve ser entre 15 e 180 minutos");
   }
 }
 
 function getSplitStrategy(daysPerWeek: number): string {
   const strategies: Record<number, string> = {
+    1: `
+      DIVISÃO OBRIGATÓRIA (1 Dia - Full Body):
+      - Dia 1: Full Body Completo (Foco em Compostos: Agachamento, Supino, Remada, Desenvolvimento)
+      
+      IMPORTANTE: Volume alto por sessão, já que é o único estímulo semanal.
+    `,
+    2: `
+      DIVISÃO OBRIGATÓRIA (2 Dias - Upper/Lower ou Full Body 2x):
+      - Dia 1: Membros Superiores (Push/Pull) + Core
+      - Dia 2: Membros Inferiores (Legs) + Cardio
+      OU
+      - Dia 1: Full Body A
+      - Dia 2: Full Body B
+      
+      IMPORTANTE: Garanta pelo menos 48h de descanso entre os treinos se for Full Body.
+    `,
     3: `
       DIVISÃO OBRIGATÓRIA (3 Dias - ABC):
       - Dia 1 (A): Peito + Tríceps + Ombro Anterior + Cardio Moderado
@@ -175,6 +192,13 @@ function getSplitStrategy(daysPerWeek: number): string {
       - Dia 6: LEGS B (Posterior + Glúteo + Abdômen) + Cardio Leve 10min
       
       IMPORTANTE: Máxima frequência - varie exercícios entre dia A e B do mesmo grupo.
+    `,
+    7: `
+      DIVISÃO OBRIGATÓRIA (7 Dias - Frequência Contínua):
+      - Seguir estrutura Push/Pull/Legs rotativa ou Upper/Lower adaptado.
+      - Dia 7 deve ser OBRIGATORIAMENTE Recuperação Ativa (Cardio leve + Mobilidade + Abdominal) ou um treino regenerativo.
+      
+      IMPORTANTE: Cuidado extremo com volume para não gerar overtraining.
     `
   };
 
