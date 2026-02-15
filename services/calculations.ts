@@ -27,11 +27,17 @@ export const calculateTDEE = (user: UserProfile): number => {
   const bmr = calculateBMR(user);
   // Estimate activity factor based on gym days (min 4 days implies moderate/active)
   // 4 days ~ 1.45, 6 days ~ 1.6
-  let activityMultiplier = 1.2; // Sedentary base
-
-  if (user.daysPerWeek === 4) activityMultiplier = 1.45;
-  else if (user.daysPerWeek === 5) activityMultiplier = 1.55;
-  else if (user.daysPerWeek >= 6) activityMultiplier = 1.65;
+  // Activity multiplier based on training days per week (1-7 range)
+  const multiplierMap: Record<number, number> = {
+    1: 1.2,
+    2: 1.3,
+    3: 1.375,
+    4: 1.45,
+    5: 1.55,
+    6: 1.65,
+    7: 1.725,
+  };
+  const activityMultiplier = multiplierMap[user.daysPerWeek] ?? 1.375;
 
   return Math.round(bmr * activityMultiplier);
 };

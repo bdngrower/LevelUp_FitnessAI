@@ -177,7 +177,7 @@ export const DbService = {
             .eq('active', true)
             .order('created_at', { ascending: false })
             .limit(1)
-            .single();
+            .maybeSingle();
 
         if (planError || !planData) return null;
 
