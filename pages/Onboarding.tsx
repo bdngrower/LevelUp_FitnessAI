@@ -26,7 +26,7 @@ export const Onboarding: React.FC = () => {
   const handleBack = () => setStep(step - 1);
 
   const handleFinish = async () => {
-    if (profile.height && profile.weight && profile.age) {
+    if (profile.height && profile.weight && profile.age && profile.name && profile.phone) {
       await DbService.saveProfile(profile as UserProfile);
       navigate('/');
     }
@@ -59,6 +59,29 @@ export const Onboarding: React.FC = () => {
             animate="show"
           >
             <h3 className="text-xl font-semibold text-foreground">Dados Pessoais</h3>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium leading-6 text-foreground">Nome Completo</label>
+                <input
+                  type="text"
+                  value={profile.name || ''}
+                  onChange={e => handleChange('name', e.target.value)}
+                  className="mt-2 block w-full rounded-xl border border-input bg-background py-3 px-4 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
+                  placeholder="Seu nome"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium leading-6 text-foreground">Telefone</label>
+                <input
+                  type="tel"
+                  value={profile.phone || ''}
+                  onChange={e => handleChange('phone', e.target.value)}
+                  className="mt-2 block w-full rounded-xl border border-input bg-background py-3 px-4 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
+                  placeholder="(11) 99999-9999"
+                />
+              </div>
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -110,7 +133,7 @@ export const Onboarding: React.FC = () => {
               whileHover={buttonHover}
               whileTap={buttonTap}
               onClick={handleNext}
-              disabled={!profile.height || !profile.weight || !profile.age}
+              disabled={!profile.height || !profile.weight || !profile.age || !profile.name || !profile.phone}
               className="mt-4 w-full flex justify-center rounded-xl bg-primary px-3 py-4 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 hover:bg-brand-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Continuar
@@ -206,7 +229,7 @@ export const Onboarding: React.FC = () => {
                 onClick={handleFinish}
                 className="flex-1 justify-center rounded-xl bg-primary px-3 py-4 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 hover:bg-brand-500"
               >
-                Criar Plano
+                Salvar Perfil
               </motion.button>
             </div>
           </motion.div>
