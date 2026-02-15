@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { StorageService } from '../services/storage';
+import { DbService } from '../services/db';
 import { Logo } from '../components/Logo';
 import { buttonHover, buttonTap, pageVariants } from '../utils/motion';
 
@@ -101,13 +102,11 @@ export const Login: React.FC = () => {
                 });
                 if (error) throw error;
 
-                // Check if profile exists
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('id')
-                    .single();
+                // Check if profile exists and load into localStorage
+                const fullProfile = await DbService.getProfile();
 
-                if (profile) {
+                if (fullProfile && fullProfile.name && fullProfile.phone && fullProfile.height && fullProfile.weight && fullProfile.age && fullProfile.gender) {
+                    StorageService.saveProfile(fullProfile as any);
                     navigate('/dashboard');
                 } else {
                     navigate('/onboarding');

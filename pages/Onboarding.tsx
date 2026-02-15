@@ -32,7 +32,11 @@ export const Onboarding: React.FC = () => {
       try {
         const existingProfile = await DbService.getProfile();
         if (existingProfile) {
-          newData = { ...newData, ...existingProfile };
+          // Filter out null/undefined values to avoid overwriting defaults
+          const cleanProfile = Object.fromEntries(
+            Object.entries(existingProfile).filter(([_, v]) => v !== null && v !== undefined)
+          );
+          newData = { ...newData, ...cleanProfile };
           hasUpdates = true;
         }
       } catch (e) {
