@@ -18,7 +18,8 @@ export const Onboarding: React.FC = () => {
     daysPerWeek: 4,
     experience: 'intermediate',
     timePerWorkout: 60,
-    cardioPreference: 'any'
+    cardioPreference: 'any',
+    gender: 'male'
   });
 
   // Pre-fill data from Auth/DB
@@ -68,8 +69,15 @@ export const Onboarding: React.FC = () => {
   const handleBack = () => setStep(step - 1);
 
   const handleFinish = async () => {
-    if (profile.height && profile.weight && profile.age && profile.name && profile.phone) {
-      await DbService.saveProfile(profile as UserProfile);
+    // Ensure defaults used in UI are actually in the object if distinct from initial state
+    const finalProfile = {
+      ...profile,
+      gender: profile.gender || 'male',
+      daysPerWeek: profile.daysPerWeek || 4
+    };
+
+    if (finalProfile.height && finalProfile.weight && finalProfile.age && finalProfile.name && finalProfile.phone) {
+      await DbService.saveProfile(finalProfile as UserProfile);
       navigate('/');
     }
   };
@@ -216,17 +224,17 @@ export const Onboarding: React.FC = () => {
               <div className="bg-card p-4 rounded-xl border border-border">
                 <input
                   type="range"
-                  min="4"
-                  max="6"
+                  min="1"
+                  max="7"
                   step="1"
                   value={profile.daysPerWeek}
                   onChange={e => handleChange('daysPerWeek', Number(e.target.value))}
                   className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
                 />
                 <div className="flex justify-between mt-2 text-xs text-muted-foreground font-medium">
+                  <span>1</span>
                   <span>4</span>
-                  <span>5</span>
-                  <span>6</span>
+                  <span>7</span>
                 </div>
                 <div className="text-center font-bold text-primary text-lg mt-2">{profile.daysPerWeek} Dias</div>
               </div>
