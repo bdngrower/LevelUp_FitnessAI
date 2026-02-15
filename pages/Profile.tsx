@@ -112,58 +112,51 @@ export const Profile: React.FC = () => {
             {/* Profile Header Card */}
             <motion.div
                 variants={itemFadeUp}
-                className="relative bg-card rounded-3xl border border-border/60 shadow-sm overflow-hidden"
+                className="bg-card rounded-3xl border border-border/60 shadow-sm overflow-hidden p-6 flex flex-col items-center text-center gap-4"
             >
-                {/* Banner gradient */}
-                <div className="h-28 bg-gradient-to-r from-primary/30 via-emerald-500/20 to-primary/10" />
-
-                <div className="px-6 pb-6 -mt-14">
-                    <div className="flex items-end gap-4">
-                        {/* Avatar with upload */}
-                        <button
-                            onClick={() => fileInputRef.current?.click()}
-                            className="relative group shrink-0"
-                            disabled={uploading}
-                        >
-                            <div className="w-24 h-24 rounded-full bg-background p-1 shadow-xl">
-                                {profile.avatarUrl ? (
-                                    <img
-                                        src={profile.avatarUrl}
-                                        alt="Avatar"
-                                        className="w-full h-full rounded-full object-cover"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full rounded-full bg-gradient-to-tr from-primary to-emerald-400 flex items-center justify-center text-white font-black text-3xl">
-                                        {profile.name?.[0] || "U"}
-                                    </div>
-                                )}
-                            </div>
-                            <div className={cn(
-                                "absolute inset-0 rounded-full flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity",
-                                uploading && "opacity-100"
-                            )}>
-                                {uploading ? (
-                                    <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                ) : (
-                                    <CameraIcon className="w-6 h-6 text-white" />
-                                )}
-                            </div>
-                            <input
-                                ref={fileInputRef}
-                                type="file"
-                                accept="image/*"
-                                onChange={handleAvatarUpload}
-                                className="hidden"
+                {/* Avatar with upload */}
+                <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="relative group shrink-0"
+                    disabled={uploading}
+                >
+                    <div className="w-24 h-24 rounded-full bg-background p-1 shadow-xl ring-2 ring-primary/10">
+                        {profile.avatarUrl ? (
+                            <img
+                                src={profile.avatarUrl}
+                                alt="Avatar"
+                                className="w-full h-full rounded-full object-cover"
                             />
-                        </button>
-
-                        <div className="flex-1 min-w-0 pb-1">
-                            <h2 className="text-xl font-bold text-foreground truncate">{profile.name || "Usuário"}</h2>
-                            <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                <span className="px-2.5 py-0.5 bg-primary/10 text-primary rounded-full text-xs font-bold uppercase tracking-wide">Membro Pro</span>
-                                <span className="px-2.5 py-0.5 bg-secondary rounded-full text-xs font-medium text-muted-foreground">{experienceLabel}</span>
+                        ) : (
+                            <div className="w-full h-full rounded-full bg-gradient-to-tr from-primary to-emerald-400 flex items-center justify-center text-white font-black text-3xl">
+                                {profile.name?.[0] || "U"}
                             </div>
-                        </div>
+                        )}
+                    </div>
+                    <div className={cn(
+                        "absolute inset-0 rounded-full flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity",
+                        uploading && "opacity-100"
+                    )}>
+                        {uploading ? (
+                            <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                            <CameraIcon className="w-6 h-6 text-white" />
+                        )}
+                    </div>
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarUpload}
+                        className="hidden"
+                    />
+                </button>
+
+                <div className="space-y-2">
+                    <h2 className="text-2xl font-bold text-foreground">{profile.name || "Usuário"}</h2>
+                    <div className="flex items-center justify-center gap-2 flex-wrap">
+                        <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-bold uppercase tracking-wide">Membro Pro</span>
+                        <span className="px-3 py-1 bg-secondary rounded-full text-xs font-medium text-muted-foreground">{experienceLabel}</span>
                     </div>
                 </div>
             </motion.div>

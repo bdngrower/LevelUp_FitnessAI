@@ -108,7 +108,7 @@ export const Dashboard: React.FC = () => {
         }
     }, [logs, plan]);
 
-    if (initializing) {
+    if (initializing || !profile) {
         return (
             <div className="p-6 space-y-6 max-w-5xl mx-auto">
                 <div className="flex justify-between items-center mb-6">
@@ -126,8 +126,6 @@ export const Dashboard: React.FC = () => {
             </div>
         )
     }
-
-    if (!profile) return null;
 
     const tdee = calculateTDEE(profile);
     const calorieTarget = getCalorieTarget(tdee);
@@ -151,12 +149,6 @@ export const Dashboard: React.FC = () => {
         } else if (!isNaN(lastDayId) && lastDayId === plan.days.length - 1) {
             // Finished the week
             nextDayIndex = 0;
-
-            // Check if we should show completion modal (if completed today and modal hasn't been shown yet this session)
-            const isToday = new Date(lastLog.date).toDateString() === new Date().toDateString();
-            // In a real app we would track "hasSeenModal" in DB or LocalStorage
-            // For now, let's show it if it's today. 
-            // To prevent infinite loop, we might need a ref or effect, handled below.
         }
     }
 
@@ -225,33 +217,33 @@ export const Dashboard: React.FC = () => {
                     {/* Quick Stats Row - Mobile Only (Visible on Desktop via Sidebar usually, but good here too) */}
                     <div className="grid grid-cols-2 gap-4">
                         <MotionCard variants={itemFadeUp} className="bg-card hover:border-primary/30 transition-colors group">
-                            <CardContent className="p-4 md:p-5 flex flex-col justify-between h-full">
-                                <div className="flex items-center gap-2 mb-2 md:mb-3">
-                                    <div className="p-1.5 md:p-2 bg-orange-100/50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded-lg group-hover:bg-orange-200/50 dark:group-hover:bg-orange-900/30 transition-colors">
-                                        <Flame className="w-4 h-4 md:w-5 md:h-5" />
+                            <CardContent className="p-6 flex flex-col justify-between h-full">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <div className="p-2 bg-orange-100/50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded-xl group-hover:bg-orange-200/50 dark:group-hover:bg-orange-900/30 transition-colors">
+                                        <Flame className="w-5 h-5" />
                                     </div>
-                                    <span className="text-[10px] md:text-xs font-bold uppercase text-muted-foreground tracking-wider">Calorias</span>
+                                    <span className="text-[11px] font-extrabold uppercase text-muted-foreground/80 tracking-widest">Calorias</span>
                                 </div>
                                 <div>
-                                    <div className="text-2xl md:text-3xl font-black text-foreground tracking-tight">{calorieTarget}</div>
-                                    <p className="text-[10px] md:text-xs text-muted-foreground font-medium mt-0.5 md:mt-1">kcal / dia</p>
+                                    <div className="text-3xl lg:text-4xl font-black text-foreground tracking-tighter">{calorieTarget}</div>
+                                    <p className="text-xs text-muted-foreground font-medium mt-1">kcal / dia</p>
                                 </div>
                             </CardContent>
                         </MotionCard>
 
                         <MotionCard variants={itemFadeUp} className="bg-card hover:border-blue-500/30 transition-colors group">
-                            <CardContent className="p-4 md:p-5 flex flex-col justify-between h-full">
-                                <div className="flex items-center gap-2 mb-2 md:mb-3">
-                                    <div className="p-1.5 md:p-2 bg-blue-100/50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg group-hover:bg-blue-200/50 dark:group-hover:bg-blue-900/30 transition-colors">
-                                        <CheckCircle className="w-4 h-4 md:w-5 md:h-5" />
+                            <CardContent className="p-6 flex flex-col justify-between h-full">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <div className="p-2 bg-blue-100/50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-xl group-hover:bg-blue-200/50 dark:group-hover:bg-blue-900/30 transition-colors">
+                                        <CheckCircle className="w-5 h-5" />
                                     </div>
-                                    <span className="text-[10px] md:text-xs font-bold uppercase text-muted-foreground tracking-wider">Frequência</span>
+                                    <span className="text-[11px] font-extrabold uppercase text-muted-foreground/80 tracking-widest">Frequência</span>
                                 </div>
                                 <div>
-                                    <div className="text-2xl md:text-3xl font-black text-foreground tracking-tight">
-                                        {workoutsThisWeek} <span className="text-sm md:text-lg text-muted-foreground font-medium">/ {profile.daysPerWeek}</span>
+                                    <div className="text-3xl lg:text-4xl font-black text-foreground tracking-tighter">
+                                        {workoutsThisWeek} <span className="text-xl text-muted-foreground/50 font-medium">/ {profile.daysPerWeek}</span>
                                     </div>
-                                    <p className="text-[10px] md:text-xs text-muted-foreground font-medium mt-0.5 md:mt-1">Treinos na semana</p>
+                                    <p className="text-xs text-muted-foreground font-medium mt-1">Treinos na semana</p>
                                 </div>
                             </CardContent>
                         </MotionCard>

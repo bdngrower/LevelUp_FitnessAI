@@ -25,6 +25,23 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
   const user = StorageService.getProfile();
 
+  // Onboarding Guard: Force profile completion
+  React.useEffect(() => {
+    if (session && user && location.pathname !== '/onboarding' && location.pathname !== '/login' && location.pathname !== '/') {
+      const isProfileComplete =
+        user.name &&
+        user.phone &&
+        user.height &&
+        user.weight &&
+        user.age &&
+        user.gender;
+
+      if (!isProfileComplete) {
+        navigate('/onboarding');
+      }
+    }
+  }, [session, user, location.pathname, navigate]);
+
   const navItems = [
     { to: "/dashboard", icon: Dumbbell, label: "Início" },
     { to: "/plan", icon: Calendar, label: "Plano" },
