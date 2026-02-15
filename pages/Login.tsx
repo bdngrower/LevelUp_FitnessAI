@@ -21,10 +21,8 @@ export const Login: React.FC = () => {
     const [phone, setPhone] = useState('');
 
     const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        let val = e.target.value.replace(/\D/g, ''); // Remove non-digits
-        if (val.length > 11) val = val.substring(0, 11); // Max 11 digits (11 99999-9999)
-
-        // Simple Mask (XX) XXXXX-XXXX
+        let val = e.target.value.replace(/\D/g, '');
+        if (val.length > 11) val = val.substring(0, 11);
         if (val.length > 2) {
             val = `(${val.substring(0, 2)}) ${val.substring(2)}`;
         }
@@ -48,7 +46,7 @@ export const Login: React.FC = () => {
                 setError('Por favor, informe seu nome completo.');
                 return;
             }
-            if (!phone || phone.length < 14) { // (XX) XXXXX-XXXX is 15 chars, (XX) XXXX-XXXX is 14
+            if (!phone || phone.length < 14) {
                 setError('Por favor, informe um telefone válido.');
                 return;
             }
@@ -71,28 +69,21 @@ export const Login: React.FC = () => {
 
                 if (error) throw error;
 
-                // Force save profile immediately to ensure data persistence
                 if (data.user) {
-                    // Start of OTP logic placeholder in future
-                    // await DbService.sendOtp(phone); 
-
                     const { error: profileError } = await supabase.from('profiles').upsert({
                         id: data.user.id,
                         name: name,
                         phone: phone,
-                        email: email, // Optional redundancy
+                        email: email,
                         updated_at: new Date().toISOString()
                     });
 
                     if (profileError) {
                         console.error("Error saving profile:", profileError);
-                        // Non-critical, but good to know
                     }
                 }
 
                 alert('Conta criada com sucesso!');
-                // Automatically log in or redirect handled by Supabase session listener usually, 
-                // but let's navigate to onboarding since new users need setup.
                 navigate('/onboarding');
 
             } else {
@@ -102,7 +93,6 @@ export const Login: React.FC = () => {
                 });
                 if (error) throw error;
 
-                // Check if profile exists and load into localStorage
                 const fullProfile = await DbService.getProfile();
 
                 if (fullProfile && fullProfile.name && fullProfile.phone && fullProfile.height && fullProfile.weight && fullProfile.age && fullProfile.gender) {
@@ -128,53 +118,101 @@ export const Login: React.FC = () => {
             variants={pageVariants}
             className="min-h-screen flex bg-background"
         >
-            {/* Left Column - Illustration/Brand */}
-            <div className="hidden lg:flex lg:w-1/2 relative bg-brand-900 overflow-hidden items-center justify-center">
-                <div className="absolute inset-0 bg-gradient-to-br from-brand-600 to-brand-900 opacity-90 z-10"></div>
+            {/* ═══════ LEFT — Brand Statement ═══════ */}
+            <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden">
+                {/* Image */}
                 <img
-                    src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=1000&auto=format&fit=crop"
-                    alt="Gym Background"
+                    src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1000&auto=format&fit=crop"
+                    alt="Gym"
                     className="absolute inset-0 w-full h-full object-cover"
                 />
-                <div className="relative z-20 text-white p-12 max-w-lg">
-                    <div className="mb-6">
-                        <Logo className="w-20 h-20" showText={false} />
-                    </div>
-                    <h1 className="text-5xl font-bold mb-6 leading-tight">Sua melhor versão começa aqui.</h1>
-                    <p className="text-xl text-brand-100 font-light">
-                        O único planejador de treinos que você precisa. Inteligência artificial focada na sua evolução e emagrecimento real.
-                    </p>
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-b from-brand-950/80 via-brand-900/70 to-brand-950/90 z-10" />
 
-                    <div className="mt-12 flex gap-4">
-                        <div className="flex -space-x-3">
-                            {[1, 2, 3].map(i => (
-                                <div key={i} className="w-10 h-10 rounded-full border-2 border-brand-900 bg-gray-300 flex items-center justify-center overflow-hidden">
-                                    <img src={`https://i.pravatar.cc/100?img=${i + 10}`} alt="User" />
-                                </div>
+                {/* Content */}
+                <div className="relative z-20 flex flex-col justify-between p-10 w-full">
+                    {/* Top — Logo */}
+                    <div>
+                        <Logo className="w-14 h-14" showText={false} />
+                    </div>
+
+                    {/* Center — Message */}
+                    <div className="max-w-md">
+                        <motion.h1
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2, duration: 0.6 }}
+                            className="text-4xl xl:text-5xl font-extrabold text-white leading-[1.1] mb-5"
+                        >
+                            Cada treino
+                            <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-300">
+                                te transforma.
+                            </span>
+                        </motion.h1>
+                        <motion.p
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.35, duration: 0.6 }}
+                            className="text-brand-200 text-lg leading-relaxed"
+                        >
+                            Treinos adaptados por IA que evoluem com você. Acompanhe cada série, cada conquista.
+                        </motion.p>
+                    </div>
+
+                    {/* Bottom — Social proof */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.5, duration: 0.6 }}
+                        className="flex items-center gap-4"
+                    >
+                        <div className="flex -space-x-2">
+                            {[12, 25, 33, 41].map(i => (
+                                <img
+                                    key={i}
+                                    src={`https://i.pravatar.cc/80?img=${i}`}
+                                    alt=""
+                                    className="w-9 h-9 rounded-full border-2 border-brand-900 object-cover"
+                                />
                             ))}
                         </div>
-                        <div className="flex flex-col justify-center">
-                            <span className="font-bold text-sm">+2.000 Alunos</span>
-                            <span className="text-xs text-brand-200">Transformando vidas hoje</span>
+                        <div>
+                            <span className="font-bold text-white text-sm">+2.000 atletas</span>
+                            <div className="flex gap-0.5 mt-0.5">
+                                {Array.from({ length: 5 }).map((_, i) => (
+                                    <svg key={i} className="w-3 h-3 text-amber-400 fill-amber-400" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                    </svg>
+                                ))}
+                            </div>
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
             </div>
 
-            {/* Right Column - Form */}
-            <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 lg:p-24 bg-background">
-                <div className="w-full max-w-sm space-y-8">
+            {/* ═══════ RIGHT — Form ═══════ */}
+            <div className="w-full lg:w-[55%] flex items-center justify-center p-6 sm:p-10 lg:p-16">
+                <div className="w-full max-w-[400px] space-y-8">
+                    {/* Mobile logo */}
+                    <div className="lg:hidden flex justify-center mb-4">
+                        <Logo className="w-14 h-14" showText={false} />
+                    </div>
+
+                    {/* Header */}
                     <div className="text-center lg:text-left">
-                        <div className="flex justify-center lg:justify-start mb-6 lg:hidden">
-                            <Logo className="w-16 h-16" showText={false} />
-                        </div>
-                        <h2 className="text-3xl font-bold tracking-tight text-foreground">Bem-vindo de volta</h2>
+                        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+                            {isSignUp ? 'Crie sua conta' : 'Bem-vindo de volta'}
+                        </h2>
                         <p className="mt-2 text-sm text-muted-foreground">
-                            Digite suas credenciais para acessar seu plano.
+                            {isSignUp
+                                ? 'Comece a treinar com inteligência em minutos.'
+                                : 'Entre para acessar seu plano de treino.'}
                         </p>
                     </div>
 
-                    <form className="space-y-6" onSubmit={handleAuth}>
+                    {/* Form */}
+                    <form className="space-y-5" onSubmit={handleAuth}>
 
                         <AnimatePresence>
                             {isSignUp && (
@@ -182,92 +220,84 @@ export const Login: React.FC = () => {
                                     initial={{ opacity: 0, height: 0 }}
                                     animate={{ opacity: 1, height: 'auto' }}
                                     exit={{ opacity: 0, height: 0 }}
-                                    className="space-y-6 overflow-hidden"
+                                    className="space-y-5 overflow-hidden"
                                 >
                                     <div>
-                                        <label htmlFor="name" className="block text-sm font-medium leading-6 text-foreground">
-                                            Nome Completo
+                                        <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1.5">
+                                            Nome completo
                                         </label>
-                                        <div className="mt-2">
-                                            <input
-                                                id="name"
-                                                name="name"
-                                                type="text"
-                                                autoComplete="name"
-                                                required={isSignUp}
-                                                value={name}
-                                                onChange={(e) => setName(e.target.value)}
-                                                className="block w-full rounded-xl border border-input bg-background py-3 px-4 text-foreground shadow-sm placeholder:text-muted-foreground focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6 transition-all"
-                                                placeholder="Seu nome"
-                                            />
-                                        </div>
+                                        <input
+                                            id="name"
+                                            name="name"
+                                            type="text"
+                                            autoComplete="name"
+                                            required={isSignUp}
+                                            value={name}
+                                            onChange={(e) => setName(e.target.value)}
+                                            className="block w-full rounded-xl border border-border bg-card py-3 px-4 text-foreground placeholder:text-muted-foreground/60 focus:ring-2 focus:ring-primary/40 focus:border-primary text-sm transition-all outline-none"
+                                            placeholder="Seu nome"
+                                        />
                                     </div>
 
                                     <div>
-                                        <label htmlFor="phone" className="block text-sm font-medium leading-6 text-foreground">
-                                            Telefone (WhatsApp)
+                                        <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-1.5">
+                                            WhatsApp
                                         </label>
-                                        <div className="mt-2">
-                                            <input
-                                                id="phone"
-                                                name="phone"
-                                                type="tel"
-                                                autoComplete="tel"
-                                                required={isSignUp}
-                                                value={phone}
-                                                onChange={handlePhoneChange}
-                                                className="block w-full rounded-xl border border-input bg-background py-3 px-4 text-foreground shadow-sm placeholder:text-muted-foreground focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6 transition-all"
-                                                placeholder="(11) 99999-9999"
-                                            />
-                                        </div>
+                                        <input
+                                            id="phone"
+                                            name="phone"
+                                            type="tel"
+                                            autoComplete="tel"
+                                            required={isSignUp}
+                                            value={phone}
+                                            onChange={handlePhoneChange}
+                                            className="block w-full rounded-xl border border-border bg-card py-3 px-4 text-foreground placeholder:text-muted-foreground/60 focus:ring-2 focus:ring-primary/40 focus:border-primary text-sm transition-all outline-none"
+                                            placeholder="(11) 99999-9999"
+                                        />
                                     </div>
                                 </motion.div>
                             )}
                         </AnimatePresence>
 
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium leading-6 text-foreground">
+                            <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1.5">
                                 E-mail
                             </label>
-                            <div className="mt-2">
-                                <input
-                                    id="email"
-                                    name="email"
-                                    type="email"
-                                    autoComplete="email"
-                                    required
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="block w-full rounded-xl border border-input bg-background py-3 px-4 text-foreground shadow-sm placeholder:text-muted-foreground focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6 transition-all"
-                                    placeholder="seu@email.com"
-                                />
-                            </div>
+                            <input
+                                id="email"
+                                name="email"
+                                type="email"
+                                autoComplete="email"
+                                required
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="block w-full rounded-xl border border-border bg-card py-3 px-4 text-foreground placeholder:text-muted-foreground/60 focus:ring-2 focus:ring-primary/40 focus:border-primary text-sm transition-all outline-none"
+                                placeholder="seu@email.com"
+                            />
                         </div>
 
                         <div>
-                            <div className="flex items-center justify-between">
-                                <label htmlFor="password" className="block text-sm font-medium leading-6 text-foreground">
+                            <div className="flex items-center justify-between mb-1.5">
+                                <label htmlFor="password" className="block text-sm font-medium text-foreground">
                                     Senha
                                 </label>
-                                <div className="text-sm">
-                                    <a href="#" className="font-semibold text-primary hover:text-brand-500">
+                                {!isSignUp && (
+                                    <a href="#" className="text-xs font-medium text-primary hover:text-primary/80 transition-colors">
                                         Esqueci a senha
                                     </a>
-                                </div>
+                                )}
                             </div>
-                            <div className="mt-2">
-                                <input
-                                    id="password"
-                                    name="password"
-                                    type="password"
-                                    autoComplete="current-password"
-                                    required
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className="block w-full rounded-xl border border-input bg-background py-3 px-4 text-foreground shadow-sm placeholder:text-muted-foreground focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6 transition-all"
-                                    placeholder="••••••••"
-                                />
-                            </div>
+                            <input
+                                id="password"
+                                name="password"
+                                type="password"
+                                autoComplete={isSignUp ? 'new-password' : 'current-password'}
+                                required
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="block w-full rounded-xl border border-border bg-card py-3 px-4 text-foreground placeholder:text-muted-foreground/60 focus:ring-2 focus:ring-primary/40 focus:border-primary text-sm transition-all outline-none"
+                                placeholder="••••••••"
+                            />
                         </div>
 
                         <AnimatePresence>
@@ -276,58 +306,60 @@ export const Login: React.FC = () => {
                                     initial={{ opacity: 0, height: 0 }}
                                     animate={{ opacity: 1, height: 'auto' }}
                                     exit={{ opacity: 0, height: 0 }}
-                                    className="text-destructive text-sm font-medium bg-destructive/10 p-3 rounded-lg flex items-center gap-2"
+                                    className="text-destructive text-sm font-medium bg-destructive/10 p-3 rounded-xl flex items-center gap-2"
                                 >
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12ZM12 8.25a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75Zm0 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clipRule="evenodd" /></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 flex-shrink-0"><path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12ZM12 8.25a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75Zm0 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clipRule="evenodd" /></svg>
                                     {error}
                                 </motion.div>
                             )}
                         </AnimatePresence>
 
-                        <div className="flex items-center">
-                            <input
-                                id="remember-me"
-                                name="remember-me"
-                                type="checkbox"
-                                className="h-4 w-4 rounded border-input text-primary focus:ring-primary bg-background"
-                            />
-                            <label htmlFor="remember-me" className="ml-2 block text-sm text-muted-foreground">
-                                Manter conectado
-                            </label>
-                        </div>
+                        {!isSignUp && (
+                            <div className="flex items-center">
+                                <input
+                                    id="remember-me"
+                                    name="remember-me"
+                                    type="checkbox"
+                                    className="h-4 w-4 rounded border-border text-primary focus:ring-primary bg-card"
+                                />
+                                <label htmlFor="remember-me" className="ml-2 block text-sm text-muted-foreground">
+                                    Manter conectado
+                                </label>
+                            </div>
+                        )}
 
-                        <div>
-                            <motion.button
-                                whileHover={!loading ? buttonHover : {}}
-                                whileTap={!loading ? buttonTap : {}}
-                                type="submit"
-                                disabled={loading}
-                                className="flex w-full justify-center rounded-xl bg-primary px-3 py-4 text-sm font-bold leading-6 text-primary-foreground shadow-lg shadow-primary/25 hover:bg-brand-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-70 disabled:cursor-not-allowed transition-all"
-                            >
-                                {loading ? (
-                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                ) : (isSignUp ? 'Criar Conta' : 'Entrar')}
-                            </motion.button>
-                        </div>
+                        <motion.button
+                            whileHover={!loading ? buttonHover : {}}
+                            whileTap={!loading ? buttonTap : {}}
+                            type="submit"
+                            disabled={loading}
+                            className="flex w-full justify-center rounded-xl bg-primary px-3 py-3.5 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-70 disabled:cursor-not-allowed transition-all"
+                        >
+                            {loading ? (
+                                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            ) : (isSignUp ? 'Criar Conta' : 'Entrar')}
+                        </motion.button>
                     </form>
 
-                    <p className="mt-10 text-center text-sm text-muted-foreground">
+                    {/* Toggle mode */}
+                    <p className="text-center text-sm text-muted-foreground">
                         {isSignUp ? 'Já tem uma conta?' : 'Não tem uma conta?'}
                         {' '}
                         <button
                             type="button"
-                            onClick={() => setIsSignUp(!isSignUp)}
-                            className="font-semibold leading-6 text-primary hover:text-brand-500 transition-colors"
+                            onClick={() => { setIsSignUp(!isSignUp); setError(''); }}
+                            className="font-semibold text-primary hover:text-primary/80 transition-colors"
                         >
                             {isSignUp ? 'Fazer Login' : 'Criar conta grátis'}
                         </button>
                     </p>
 
-                    <div className="mt-8 pt-8 border-t border-border text-center">
-                        <p className="text-xs text-muted-foreground">© 2024 LevelUp Fitness AI. Todos os direitos reservados.</p>
+                    {/* Footer */}
+                    <div className="pt-6 border-t border-border/50 text-center">
+                        <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} LevelUp Fitness AI</p>
                     </div>
                 </div>
             </div>
