@@ -9,6 +9,7 @@ import { UserProfile } from '../types';
 import { Card, CardContent } from '../components/ui/Card';
 import { LogOut, ChevronRight, UserIcon, Settings, TrendingUp, Calendar, Dumbbell } from '../components/Icons';
 import { Button } from '../components/ui/Button';
+import { Skeleton } from '../components/ui/Skeleton';
 import { cn } from '../utils/cn';
 
 const MotionCard = motion(Card);
@@ -90,15 +91,36 @@ export const Profile: React.FC = () => {
         navigate('/');
     }
 
-    if (!profile) return null;
+    if (!profile) return (
+        <div className="p-4 md:p-8 pb-24 max-w-3xl mx-auto space-y-6">
+            <div className="bg-card rounded-3xl border border-border/60 p-6 flex flex-col items-center gap-4">
+                <Skeleton className="w-24 h-24 rounded-full" />
+                <Skeleton className="h-6 w-40 rounded-lg" />
+                <div className="flex gap-2">
+                    <Skeleton className="h-6 w-24 rounded-full" />
+                    <Skeleton className="h-6 w-24 rounded-full" />
+                </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+                <Skeleton className="h-28 rounded-2xl" />
+                <Skeleton className="h-28 rounded-2xl" />
+                <Skeleton className="h-28 rounded-2xl" />
+                <Skeleton className="h-28 rounded-2xl" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Skeleton className="h-44 rounded-2xl" />
+                <Skeleton className="h-44 rounded-2xl" />
+            </div>
+        </div>
+    );
 
     const experienceLabel = profile.experience === 'beginner' ? 'Iniciante' : profile.experience === 'intermediate' ? 'Intermediário' : 'Avançado';
 
     const statCards = [
-        { label: 'Peso Inicial', value: `${initialWeight}`, unit: 'kg', color: 'text-blue-500', bgColor: 'bg-blue-500/10' },
-        { label: 'Peso Atual', value: `${profile.weight}`, unit: 'kg', color: 'text-primary', bgColor: 'bg-primary/10' },
-        { label: 'Altura', value: `${profile.height}`, unit: 'cm', color: 'text-violet-500', bgColor: 'bg-violet-500/10' },
-        { label: 'Idade', value: `${profile.age}`, unit: 'anos', color: 'text-amber-500', bgColor: 'bg-amber-500/10' },
+        { label: 'Peso Inicial', value: `${initialWeight}`, unit: 'kg', color: 'text-blue-400', iconBg: 'bg-blue-500/10 ring-blue-500/20', icon: <TrendingUp className="w-4 h-4" /> },
+        { label: 'Peso Atual', value: `${profile.weight}`, unit: 'kg', color: 'text-emerald-400', iconBg: 'bg-emerald-500/10 ring-emerald-500/20', icon: <Dumbbell className="w-4 h-4" /> },
+        { label: 'Altura', value: `${profile.height}`, unit: 'cm', color: 'text-violet-400', iconBg: 'bg-violet-500/10 ring-violet-500/20', icon: <TrendingUp className="w-4 h-4" /> },
+        { label: 'Idade', value: `${profile.age}`, unit: 'anos', color: 'text-amber-400', iconBg: 'bg-amber-500/10 ring-amber-500/20', icon: <Calendar className="w-4 h-4" /> },
     ];
 
     return (
@@ -112,7 +134,7 @@ export const Profile: React.FC = () => {
             {/* Profile Header Card */}
             <motion.div
                 variants={itemFadeUp}
-                className="bg-card rounded-3xl border border-border/60 shadow-sm overflow-hidden p-6 flex flex-col items-center text-center gap-4"
+                className="bg-card/60 backdrop-blur-xl rounded-3xl border border-white/5 shadow-lg shadow-black/5 overflow-hidden p-8 flex flex-col items-center text-center gap-5"
             >
                 {/* Avatar with upload */}
                 <button
@@ -152,7 +174,7 @@ export const Profile: React.FC = () => {
                     />
                 </button>
 
-                <div className="space-y-2">
+                <div className="space-y-3">
                     <h2 className="text-2xl font-bold text-foreground">{profile.name || "Usuário"}</h2>
                     <div className="flex items-center justify-center gap-2 flex-wrap">
                         <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-bold uppercase tracking-wide">Membro Pro</span>
@@ -161,39 +183,44 @@ export const Profile: React.FC = () => {
                 </div>
             </motion.div>
 
-            {/* Stats Grid */}
-            <motion.div variants={containerStagger} className="grid grid-cols-2 gap-3">
-                {statCards.map((stat, i) => (
-                    <MotionCard key={stat.label} variants={itemFadeUp} className="hover:border-primary/20 transition-colors">
-                        <CardContent className="p-5">
-                            <div className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest mb-2">{stat.label}</div>
-                            <div className="flex items-baseline gap-1">
-                                <span className={cn("text-2xl font-black", stat.color)}>{stat.value}</span>
-                                <span className="text-xs font-bold text-muted-foreground">{stat.unit}</span>
+            {/* Stats Grid - Redesigned with icons */}
+            <motion.div variants={containerStagger} className="grid grid-cols-2 gap-4">
+                {statCards.map((stat) => (
+                    <MotionCard key={stat.label} variants={itemFadeUp} className="bg-card/40 backdrop-blur-xl border border-white/5 hover:border-primary/20 transition-all duration-300 shadow-lg shadow-black/5">
+                        <CardContent className="p-6">
+                            <div className="flex items-center gap-2.5 mb-3">
+                                <div className={cn("p-1.5 rounded-lg ring-1", stat.iconBg, stat.color)}>
+                                    {stat.icon}
+                                </div>
+                                <span className="text-[11px] font-bold uppercase text-muted-foreground/80 tracking-widest">{stat.label}</span>
+                            </div>
+                            <div className="flex items-baseline gap-1.5">
+                                <span className={cn("text-3xl font-black tracking-tight", stat.color)}>{stat.value}</span>
+                                <span className="text-sm font-semibold text-muted-foreground/60">{stat.unit}</span>
                             </div>
                         </CardContent>
                     </MotionCard>
                 ))}
             </motion.div>
 
-            {/* Body & Preferences */}
+            {/* Body & Preferences - Redesigned */}
             <motion.div variants={containerStagger} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <MotionCard variants={itemFadeUp} className="overflow-hidden border-border/60">
-                    <div className="px-5 pt-5 pb-2">
-                        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Dados Corporais</h3>
+                <MotionCard variants={itemFadeUp} className="overflow-hidden bg-card/40 backdrop-blur-xl border border-white/5 shadow-lg shadow-black/5">
+                    <div className="px-6 pt-6 pb-3">
+                        <h3 className="text-[11px] font-bold text-muted-foreground/80 uppercase tracking-widest">Dados Corporais</h3>
                     </div>
-                    <div className="divide-y divide-border/40">
+                    <div className="divide-y divide-border/30">
                         <ProfileItem label="Cintura" value={`${profile.waistSize || '--'} cm`} />
                         <ProfileItem label="Gênero" value={profile.gender === 'male' ? 'Masculino' : 'Feminino'} />
                         <ProfileItem label="Limitações" value={profile.limitations || 'Nenhuma'} />
                     </div>
                 </MotionCard>
 
-                <MotionCard variants={itemFadeUp} className="overflow-hidden border-border/60">
-                    <div className="px-5 pt-5 pb-2">
-                        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Preferências de Treino</h3>
+                <MotionCard variants={itemFadeUp} className="overflow-hidden bg-card/40 backdrop-blur-xl border border-white/5 shadow-lg shadow-black/5">
+                    <div className="px-6 pt-6 pb-3">
+                        <h3 className="text-[11px] font-bold text-muted-foreground/80 uppercase tracking-widest">Preferências de Treino</h3>
                     </div>
-                    <div className="divide-y divide-border/40">
+                    <div className="divide-y divide-border/30">
                         <ProfileItem label="Frequência" value={`${profile.daysPerWeek} dias/semana`} />
                         <ProfileItem label="Duração" value={`${profile.timePerWorkout} min`} />
                         <ProfileItem label="Cardio" value={profile.cardioPreference === 'any' ? 'Misto' : profile.cardioPreference} />
@@ -202,15 +229,15 @@ export const Profile: React.FC = () => {
             </motion.div>
 
             {/* Quick Actions */}
-            <motion.div variants={containerStagger} className="space-y-2.5">
+            <motion.div variants={containerStagger} className="space-y-3">
                 <MotionCard
                     variants={itemFadeUp}
-                    className="cursor-pointer hover:border-primary/30 transition-all group"
+                    className="cursor-pointer bg-card/40 backdrop-blur-xl border border-white/5 hover:border-primary/30 transition-all group shadow-lg shadow-black/5"
                     onClick={() => navigate('/onboarding')}
                 >
                     <CardContent className="p-5 flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="bg-primary/10 p-2 rounded-lg text-primary group-hover:bg-primary/20 transition-colors">
+                            <div className="bg-primary/10 p-2.5 rounded-xl text-primary group-hover:bg-primary/20 transition-colors ring-1 ring-primary/20">
                                 <UserIcon className="w-5 h-5" />
                             </div>
                             <span className="font-semibold text-sm">Editar Perfil & Metas</span>
@@ -221,12 +248,12 @@ export const Profile: React.FC = () => {
 
                 <MotionCard
                     variants={itemFadeUp}
-                    className="cursor-pointer hover:border-destructive/30 transition-all group"
+                    className="cursor-pointer bg-card/40 backdrop-blur-xl border border-white/5 hover:border-destructive/30 transition-all group shadow-lg shadow-black/5"
                     onClick={handleLogout}
                 >
                     <CardContent className="p-5 flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="bg-destructive/10 p-2 rounded-lg text-destructive group-hover:bg-destructive/20 transition-colors">
+                            <div className="bg-destructive/10 p-2.5 rounded-xl text-destructive group-hover:bg-destructive/20 transition-colors ring-1 ring-destructive/20">
                                 <LogOut className="w-5 h-5" />
                             </div>
                             <span className="font-semibold text-sm text-destructive">Sair da Conta</span>
@@ -246,8 +273,8 @@ export const Profile: React.FC = () => {
 };
 
 const ProfileItem = ({ label, value }: { label: string, value: string | number }) => (
-    <div className="flex justify-between items-center px-5 py-3.5 hover:bg-secondary/50 dark:hover:bg-white/5 transition-colors">
-        <span className="text-sm font-medium text-foreground/70">{label}</span>
+    <div className="flex justify-between items-center px-6 py-4 hover:bg-white/[0.02] transition-colors">
+        <span className="text-sm font-medium text-muted-foreground">{label}</span>
         <span className="text-sm font-bold text-foreground capitalize">{value}</span>
     </div>
 );
