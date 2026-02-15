@@ -216,11 +216,11 @@ export const Dashboard: React.FC = () => {
                 <div className="md:col-span-12 lg:col-span-8 space-y-6 md:space-y-8">
 
                     {/* Quick Stats Row - Mobile Only (Visible on Desktop via Sidebar usually, but good here too) */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <MotionCard variants={itemFadeUp} className="bg-card hover:border-primary/30 transition-colors group">
+                    <div className="grid grid-cols-2 gap-4 md:gap-6">
+                        <MotionCard variants={itemFadeUp} className="bg-card/40 backdrop-blur-xl border border-white/5 hover:border-primary/20 transition-all duration-300 group shadow-lg shadow-black/5">
                             <CardContent className="p-5 md:p-6 flex flex-col justify-between h-full">
                                 <div className="flex items-center gap-2 mb-3 md:mb-4">
-                                    <div className="p-2 bg-orange-100/50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded-xl group-hover:bg-orange-200/50 dark:group-hover:bg-orange-900/30 transition-colors shrink-0">
+                                    <div className="p-2 bg-orange-500/10 text-orange-500 rounded-xl group-hover:bg-orange-500/20 transition-colors shrink-0 ring-1 ring-orange-500/20">
                                         <Flame className="w-5 h-5" />
                                     </div>
                                     <span className="text-[10px] md:text-[11px] font-extrabold uppercase text-muted-foreground/80 tracking-widest truncate">Calorias</span>
@@ -232,10 +232,10 @@ export const Dashboard: React.FC = () => {
                             </CardContent>
                         </MotionCard>
 
-                        <MotionCard variants={itemFadeUp} className="bg-card hover:border-blue-500/30 transition-colors group">
+                        <MotionCard variants={itemFadeUp} className="bg-card/40 backdrop-blur-xl border border-white/5 hover:border-blue-500/20 transition-all duration-300 group shadow-lg shadow-black/5">
                             <CardContent className="p-5 md:p-6 flex flex-col justify-between h-full">
                                 <div className="flex items-center gap-2 mb-3 md:mb-4">
-                                    <div className="p-2 bg-blue-100/50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-xl group-hover:bg-blue-200/50 dark:group-hover:bg-blue-900/30 transition-colors shrink-0">
+                                    <div className="p-2 bg-blue-500/10 text-blue-500 rounded-xl group-hover:bg-blue-500/20 transition-colors shrink-0 ring-1 ring-blue-500/20">
                                         <CheckCircle className="w-5 h-5" />
                                     </div>
                                     <span className="text-[10px] md:text-[11px] font-extrabold uppercase text-muted-foreground/80 tracking-widest truncate">Frequência</span>

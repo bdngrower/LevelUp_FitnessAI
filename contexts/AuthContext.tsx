@@ -35,6 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, []);
 
     const signOut = async () => {
+        StorageService.clearAll();
         await supabase.auth.signOut();
     };
 

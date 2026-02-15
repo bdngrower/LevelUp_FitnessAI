@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { StorageService } from './storage';
 import { UserProfile, WeeklyPlan, WorkoutLog, WeightLog, ExerciseLog, WorkoutDay, Exercise, CardioSession, HistoryItem } from '../types';
 
 export const DbService = {
@@ -55,6 +56,15 @@ export const DbService = {
         });
 
         if (error) throw error;
+
+        // Sync with local storage immediately to pass Onboarding Guard
+        // We know the ID matches current user
+        // Sync with local storage immediately to pass Onboarding Guard
+        try {
+            StorageService.saveProfile(profile);
+        } catch (e) {
+            console.warn("Failed to sync profile to local storage", e);
+        }
     },
 
     // Weight Logs
