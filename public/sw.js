@@ -1,4 +1,4 @@
-const CACHE_NAME = 'levelup-v1';
+const CACHE_NAME = 'levelup-v2';
 const STATIC_ASSETS = [
     '/',
     '/index.html',
@@ -24,23 +24,22 @@ self.addEventListener('activate', (event) => {
     self.clients.claim();
 });
 
-// Fetch: network-first for API, cache-first for assets
+// Fetch: network-first for Navigation/API, cache-first for assets
 self.addEventListener('fetch', (event) => {
     const { request } = event;
     const url = new URL(request.url);
 
-    // Skip non-GET requests
-    if (request.method !== 'GET') return;
-
-    // Network-first for API calls and external resources
-    if (url.origin !== location.origin || url.pathname.startsWith('/api')) {
+    // 1. Navigation (HTML) & API -> Network First
+    // Ensures we always get the latest index.html (with new asset hashes)
+    if (request.mode === 'navigate' || url.pathname === '/' || url.pathname === '/index.html' || url.pathname.startsWith('/api')) {
         event.respondWith(
             fetch(request).catch(() => caches.match(request))
         );
         return;
     }
 
-    // Cache-first for static assets
+    // 2. Static Assets (JS, CSS, Images) -> Cache First
+    // (We rely on unique hashes in filenames for invalidation)
     event.respondWith(
         caches.match(request).then((cached) => {
             if (cached) return cached;
