@@ -26,8 +26,19 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const user = StorageService.getProfile();
 
   // Onboarding Guard: Force profile completion
+  // Onboarding Guard: Force profile completion
   React.useEffect(() => {
-    if (session && user && location.pathname !== '/onboarding' && location.pathname !== '/login' && location.pathname !== '/') {
+    // Only run if authentication loading is done
+    if (!loading && session && location.pathname !== '/onboarding' && location.pathname !== '/login' && location.pathname !== '/') {
+      // Strict check: if user is null (not in storage) OR incomplete
+      if (!user) {
+        // If we have a session but no local user, it's safer to send to onboarding
+        // The onboarding page (or dashboard init) is responsible for syncing if it exists remotely but not locally.
+        // But to avoid loops, let's just go there.
+        navigate('/onboarding');
+        return;
+      }
+
       const isProfileComplete =
         user.name &&
         user.phone &&
@@ -40,7 +51,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         navigate('/onboarding');
       }
     }
-  }, [session, user, location.pathname, navigate]);
+  }, [session, loading, user, location.pathname, navigate]);
 
   const navItems = [
     { to: "/dashboard", icon: Dumbbell, label: "Início" },

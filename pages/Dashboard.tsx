@@ -33,13 +33,14 @@ export const Dashboard: React.FC = () => {
 
     useEffect(() => {
         const init = async () => {
-            await new Promise(r => setTimeout(r, 600)); // Slight delay for smoother entry
+            // Removed artificial delay for faster loading
             const user = await DbService.getProfile();
             if (!user) {
                 navigate('/onboarding');
                 return;
             }
             setProfile(user);
+            // ... (rest of init)
             const [fetchedPlan, fetchedLogs, fetchedHistory] = await Promise.all([
                 DbService.getPlan(),
                 DbService.getWorkoutLogs(),
@@ -217,33 +218,33 @@ export const Dashboard: React.FC = () => {
                     {/* Quick Stats Row - Mobile Only (Visible on Desktop via Sidebar usually, but good here too) */}
                     <div className="grid grid-cols-2 gap-4">
                         <MotionCard variants={itemFadeUp} className="bg-card hover:border-primary/30 transition-colors group">
-                            <CardContent className="p-6 flex flex-col justify-between h-full">
-                                <div className="flex items-center gap-2 mb-4">
-                                    <div className="p-2 bg-orange-100/50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded-xl group-hover:bg-orange-200/50 dark:group-hover:bg-orange-900/30 transition-colors">
+                            <CardContent className="p-5 md:p-6 flex flex-col justify-between h-full">
+                                <div className="flex items-center gap-2 mb-3 md:mb-4">
+                                    <div className="p-2 bg-orange-100/50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded-xl group-hover:bg-orange-200/50 dark:group-hover:bg-orange-900/30 transition-colors shrink-0">
                                         <Flame className="w-5 h-5" />
                                     </div>
-                                    <span className="text-[11px] font-extrabold uppercase text-muted-foreground/80 tracking-widest">Calorias</span>
+                                    <span className="text-[10px] md:text-[11px] font-extrabold uppercase text-muted-foreground/80 tracking-widest truncate">Calorias</span>
                                 </div>
-                                <div>
-                                    <div className="text-3xl lg:text-4xl font-black text-foreground tracking-tighter">{calorieTarget}</div>
-                                    <p className="text-xs text-muted-foreground font-medium mt-1">kcal / dia</p>
+                                <div className="min-w-0">
+                                    <div className="text-2xl md:text-3xl lg:text-4xl font-black text-foreground tracking-tighter truncate">{calorieTarget}</div>
+                                    <p className="text-xs text-muted-foreground font-medium mt-1 truncate">kcal / dia</p>
                                 </div>
                             </CardContent>
                         </MotionCard>
 
                         <MotionCard variants={itemFadeUp} className="bg-card hover:border-blue-500/30 transition-colors group">
-                            <CardContent className="p-6 flex flex-col justify-between h-full">
-                                <div className="flex items-center gap-2 mb-4">
-                                    <div className="p-2 bg-blue-100/50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-xl group-hover:bg-blue-200/50 dark:group-hover:bg-blue-900/30 transition-colors">
+                            <CardContent className="p-5 md:p-6 flex flex-col justify-between h-full">
+                                <div className="flex items-center gap-2 mb-3 md:mb-4">
+                                    <div className="p-2 bg-blue-100/50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-xl group-hover:bg-blue-200/50 dark:group-hover:bg-blue-900/30 transition-colors shrink-0">
                                         <CheckCircle className="w-5 h-5" />
                                     </div>
-                                    <span className="text-[11px] font-extrabold uppercase text-muted-foreground/80 tracking-widest">Frequência</span>
+                                    <span className="text-[10px] md:text-[11px] font-extrabold uppercase text-muted-foreground/80 tracking-widest truncate">Frequência</span>
                                 </div>
-                                <div>
-                                    <div className="text-3xl lg:text-4xl font-black text-foreground tracking-tighter">
-                                        {workoutsThisWeek} <span className="text-xl text-muted-foreground/50 font-medium">/ {profile.daysPerWeek}</span>
+                                <div className="min-w-0">
+                                    <div className="text-2xl md:text-3xl lg:text-4xl font-black text-foreground tracking-tighter truncate">
+                                        {workoutsThisWeek} <span className="text-lg md:text-xl text-muted-foreground/50 font-medium">/ {profile.daysPerWeek}</span>
                                     </div>
-                                    <p className="text-xs text-muted-foreground font-medium mt-1">Treinos na semana</p>
+                                    <p className="text-xs text-muted-foreground font-medium mt-1 truncate">Treinos na semana</p>
                                 </div>
                             </CardContent>
                         </MotionCard>
