@@ -170,7 +170,7 @@ function getSplitStrategy(daysPerWeek: number): string {
       - Dia 3 (C): Pernas Completo (Quadríceps + Posterior + Glúteo + Panturrilha) + Cardio Leve (10-15min)
       - Dia 4 (D): Ombros (Anterior/Lateral/Posterior) + Abdômen + Cardio Moderado (20min)
       
-      IMPORTANTE: Equilíbrio entre volume e intensidade.
+      IMPORTANTE: Equilíbrio entre volume e intensidade. NÃO GERE DIAS 5, 6 OU 7.
     `,
     5: `
       DIVISÃO OBRIGATÓRIA (5 Dias):
@@ -318,7 +318,7 @@ FORMATO DE RESPOSTA (JSON ESTRITO - COPIE EXATAMENTE ESTA ESTRUTURA):
 }
 
 VALIDAÇÕES FINAIS:
-✓ Gere EXATAMENTE ${user.daysPerWeek} dias de treino
+✓ Gere EXATAMENTE ${user.daysPerWeek} dias de treino. Nem mais, nem menos.
 ✓ Cada dia deve ter entre 6-9 exercícios de musculação
 ✓ Use exercícios da lista fornecida sempre que possível
 ✓ Varie os exercícios ao longo da semana (sem repetições desnecessárias)
@@ -345,6 +345,7 @@ async function withTimeout<T>(
 async function generateWithGemini(
   apiKey: string,
   systemPrompt: string,
+  expectedDays: number,
   retries: number = CONFIG.MAX_RETRIES
 ): Promise<WorkoutPlan> {
   const ai = new GoogleGenerativeAI(apiKey);
@@ -380,6 +381,15 @@ async function generateWithGemini(
         throw new Error('Formato inválido: faltam dias de treino');
       }
 
+      // STRICT VALIDATION: Check day count
+      if (data.days.length > expectedDays) {
+        console.warn(`⚠️ Gemini gerou ${data.days.length} dias, mas o usuário pediu ${expectedDays}. Cortando excesso.`);
+        data.days = data.days.slice(0, expectedDays);
+      } else if (data.days.length < expectedDays) {
+        console.warn(`⚠️ Gemini gerou menos dias (${data.days.length}) que o pedido (${expectedDays}).`);
+        // In strict mode we might throw, but for now accept to avoid 500 error, user will just have fewer days
+      }
+
       console.log(`✅ Sucesso Gemini: ${data.days.length} dias gerados`);
       return data;
 
@@ -402,6 +412,7 @@ async function generateWithGemini(
 async function generateWithGroq(
   apiKey: string,
   systemPrompt: string,
+  expectedDays: number,
   retries: number = CONFIG.MAX_RETRIES
 ): Promise<WorkoutPlan> {
   for (let attempt = 0; attempt <= retries; attempt++) {
@@ -446,6 +457,14 @@ async function generateWithGroq(
 
       if (!data.days || !Array.isArray(data.days) || data.days.length === 0) {
         throw new Error('Formato inválido: faltam dias de treino');
+      }
+
+      // STRICT VALIDATION: Check day count
+      if (data.days.length > expectedDays) {
+        console.warn(`⚠️ Groq gerou ${data.days.length} dias, mas o usuário pediu ${expectedDays}. Cortando excesso.`);
+        data.days = data.days.slice(0, expectedDays);
+      } else if (data.days.length < expectedDays) {
+        console.warn(`⚠️ Groq gerou menos dias (${data.days.length}) que o pedido (${expectedDays}).`);
       }
 
       console.log(`✅ Sucesso Groq: ${data.days.length} dias gerados`);
@@ -506,7 +525,7 @@ Deno.serve(async (req) => {
     const geminiKey = Deno.env.get('GEMINI_API_KEY');
     if (geminiKey) {
       try {
-        const workoutPlan = await generateWithGemini(geminiKey, systemPrompt);
+        const workoutPlan = await generateWithGemini(geminiKey, systemPrompt, user.daysPerWeek);
         return new Response(JSON.stringify(workoutPlan), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 200
@@ -524,7 +543,7 @@ Deno.serve(async (req) => {
       throw new Error('Nenhuma API key configurada (GEMINI_API_KEY ou GROQ_API_KEY)');
     }
 
-    const workoutPlan = await generateWithGroq(groqKey, systemPrompt);
+    const workoutPlan = await generateWithGroq(groqKey, systemPrompt, user.daysPerWeek);
     return new Response(JSON.stringify(workoutPlan), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200
