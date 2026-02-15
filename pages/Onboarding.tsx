@@ -24,23 +24,40 @@ export const Onboarding: React.FC = () => {
   // Pre-fill data from Auth/DB
   React.useEffect(() => {
     const loadData = async () => {
+      let newData = { ...profile };
+      let hasUpdates = false;
+
       // 1. Try fetching full profile from DB
-      const existingProfile = await DbService.getProfile();
-      if (existingProfile) {
-        setProfile(prev => ({ ...prev, ...existingProfile }));
-        return;
+      try {
+        const existingProfile = await DbService.getProfile();
+        if (existingProfile) {
+          newData = { ...newData, ...existingProfile };
+          hasUpdates = true;
+        }
+      } catch (e) {
+        console.warn('Error fetching profile for onboarding:', e);
       }
 
-      // 2. Fallback to Auth Metadata (if DB is empty but Auth has data)
+      // 2. Fill missing fields from Auth Metadata (Fallback)
       if (user?.user_metadata) {
-        setProfile(prev => ({
-          ...prev,
-          name: user.user_metadata.name || prev.name,
-          phone: user.user_metadata.phone || prev.phone
-        }));
+        if (!newData.name && user.user_metadata.name) {
+          newData.name = user.user_metadata.name;
+          hasUpdates = true;
+        }
+        if (!newData.phone && user.user_metadata.phone) {
+          newData.phone = user.user_metadata.phone;
+          hasUpdates = true;
+        }
+      }
+
+      if (hasUpdates) {
+        setProfile(prev => ({ ...prev, ...newData }));
       }
     };
-    loadData();
+
+    if (user) {
+      loadData();
+    }
   }, [user]);
 
   const handleChange = (key: keyof UserProfile, value: any) => {
