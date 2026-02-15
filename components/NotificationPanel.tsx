@@ -4,6 +4,19 @@ import { DbService } from '../services/db';
 import { StorageService } from '../services/storage';
 import { cn } from '../utils/cn';
 
+const READ_IDS_KEY = 'levelup_read_notification_ids';
+
+const getReadIds = (): Set<string> => {
+    try {
+        const raw = localStorage.getItem(READ_IDS_KEY);
+        return raw ? new Set(JSON.parse(raw)) : new Set();
+    } catch { return new Set(); }
+};
+
+const saveReadIds = (ids: Set<string>) => {
+    localStorage.setItem(READ_IDS_KEY, JSON.stringify([...ids]));
+};
+
 interface Notification {
     id: string;
     type: 'workout' | 'streak' | 'achievement' | 'tip' | 'system';
@@ -298,10 +311,15 @@ export const NotificationPanel: React.FC = () => {
 
     const unreadCount = notifications.filter(n => !n.read).length;
 
+    const loadAndApplyReadState = async () => {
+        const notifs = await generateNotifications();
+        const readIds = getReadIds();
+        return notifs.map(n => ({ ...n, read: n.read || readIds.has(n.id) }));
+    };
+
     useEffect(() => {
-        // Load notifications on mount
         const load = async () => {
-            const notifs = await generateNotifications();
+            const notifs = await loadAndApplyReadState();
             setNotifications(notifs);
         };
         load();
@@ -324,13 +342,16 @@ export const NotificationPanel: React.FC = () => {
         setIsOpen(!isOpen);
         if (!isOpen) {
             setLoading(true);
-            const notifs = await generateNotifications();
+            const notifs = await loadAndApplyReadState();
             setNotifications(notifs);
             setLoading(false);
         }
     };
 
     const markAllRead = () => {
+        const readIds = getReadIds();
+        notifications.forEach(n => readIds.add(n.id));
+        saveReadIds(readIds);
         setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     };
 
