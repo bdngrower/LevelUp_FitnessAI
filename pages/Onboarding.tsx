@@ -6,8 +6,11 @@ import { DbService } from '../services/db';
 import { Logo } from '../components/Logo';
 import { pageVariants, itemFadeUp, buttonHover, buttonTap } from '../utils/motion';
 
+import { useAuth } from '../contexts/AuthContext';
+
 export const Onboarding: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [step, setStep] = useState(1);
   const [profile, setProfile] = useState<Partial<UserProfile>>({
     goal: 'weight_loss',
@@ -17,6 +20,28 @@ export const Onboarding: React.FC = () => {
     timePerWorkout: 60,
     cardioPreference: 'any'
   });
+
+  // Pre-fill data from Auth/DB
+  React.useEffect(() => {
+    const loadData = async () => {
+      // 1. Try fetching full profile from DB
+      const existingProfile = await DbService.getProfile();
+      if (existingProfile) {
+        setProfile(prev => ({ ...prev, ...existingProfile }));
+        return;
+      }
+
+      // 2. Fallback to Auth Metadata (if DB is empty but Auth has data)
+      if (user?.user_metadata) {
+        setProfile(prev => ({
+          ...prev,
+          name: user.user_metadata.name || prev.name,
+          phone: user.user_metadata.phone || prev.phone
+        }));
+      }
+    };
+    loadData();
+  }, [user]);
 
   const handleChange = (key: keyof UserProfile, value: any) => {
     setProfile(prev => ({ ...prev, [key]: value }));
