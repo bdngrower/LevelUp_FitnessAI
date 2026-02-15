@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from "npm:@google/generative-ai";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "./cors.ts";
 
 // ==================== LISTA COMPLETA DE EXERCÍCIOS ====================
@@ -6,7 +7,7 @@ const EXERCISES_BY_MUSCLE = {
   peito: [
     "Supino Reto com Barra", "Supino Inclinado com Barra", "Supino Declinado com Barra",
     "Supino Reto com Halteres", "Supino Inclinado com Halteres", "Supino Declinado com Halteres",
-    "Crucifixo Reto com Halteres", "Crucifixo Inclinado com Halteres", 
+    "Crucifixo Reto com Halteres", "Crucifixo Inclinado com Halteres",
     "Crucifixo na Polia", "Crossover na Polia", "Peck Deck (Voador)",
     "Flexão de Braço", "Flexão com Pés Elevados", "Pullover com Halteres"
   ],
@@ -125,11 +126,11 @@ function validateUserProfile(user: UserProfile): void {
   if (!user) {
     throw new Error("Perfil de usuário não fornecido");
   }
-  
+
   if (!user.daysPerWeek || user.daysPerWeek < 3 || user.daysPerWeek > 6) {
     throw new Error("Dias por semana deve ser entre 3 e 6");
   }
-  
+
   if (user.timePerWorkout && (user.timePerWorkout < 30 || user.timePerWorkout > 120)) {
     throw new Error("Tempo por treino deve ser entre 30 e 120 minutos");
   }
@@ -176,13 +177,13 @@ function getSplitStrategy(daysPerWeek: number): string {
       IMPORTANTE: Máxima frequência - varie exercícios entre dia A e B do mesmo grupo.
     `
   };
-  
+
   return strategies[daysPerWeek] || strategies[4];
 }
 
 function buildSystemPrompt(user: UserProfile): string {
   const splitStrategy = getSplitStrategy(user.daysPerWeek);
-  
+
   return `
 Você é o LevelUp Fitness AI, um treinador de elite brasileiro especializado em emagrecimento, hipertrofia e performance.
 
@@ -323,11 +324,11 @@ async function generateWithGemini(
   retries: number = CONFIG.MAX_RETRIES
 ): Promise<WorkoutPlan> {
   const ai = new GoogleGenerativeAI(apiKey);
-  
+
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       console.log(`Tentativa Gemini ${attempt + 1}/${retries + 1}`);
-      
+
       const model = ai.getGenerativeModel({
         model: CONFIG.GEMINI_MODEL,
         generationConfig: {
@@ -350,7 +351,7 @@ async function generateWithGemini(
       }
 
       const data = JSON.parse(text) as WorkoutPlan;
-      
+
       if (!data.days || !Array.isArray(data.days) || data.days.length === 0) {
         throw new Error('Formato inválido: faltam dias de treino');
       }
@@ -360,16 +361,16 @@ async function generateWithGemini(
 
     } catch (error) {
       console.error(`❌ Erro Gemini tentativa ${attempt + 1}:`, error);
-      
+
       if (attempt === retries) {
         throw error;
       }
-      
+
       // Aguarda antes de tentar novamente (backoff exponencial)
       await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
     }
   }
-  
+
   throw new Error('Falha em todas as tentativas do Gemini');
 }
 
@@ -382,7 +383,7 @@ async function generateWithGroq(
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       console.log(`Tentativa Groq ${attempt + 1}/${retries + 1}`);
-      
+
       const response = await withTimeout(
         fetch('https://api.groq.com/openai/v1/chat/completions', {
           method: 'POST',
@@ -412,13 +413,13 @@ async function generateWithGroq(
 
       const groqData = await response.json();
       const content = groqData.choices?.[0]?.message?.content;
-      
+
       if (!content) {
         throw new Error('Resposta vazia do Groq');
       }
 
       const data = JSON.parse(content) as WorkoutPlan;
-      
+
       if (!data.days || !Array.isArray(data.days) || data.days.length === 0) {
         throw new Error('Formato inválido: faltam dias de treino');
       }
@@ -428,15 +429,15 @@ async function generateWithGroq(
 
     } catch (error) {
       console.error(`❌ Erro Groq tentativa ${attempt + 1}:`, error);
-      
+
       if (attempt === retries) {
         throw error;
       }
-      
+
       await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
     }
   }
-  
+
   throw new Error('Falha em todas as tentativas do Groq');
 }
 
@@ -449,16 +450,34 @@ Deno.serve(async (req) => {
 
   try {
     console.log('🚀 Iniciando geração de plano de treino...');
-    
+
+    // 1. Verify Authentication Manually
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('Missing Authorization header');
+    }
+
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const { data: { user: authUser }, error: authError } = await supabaseClient.auth.getUser();
+    if (authError || !authUser) {
+      console.error('❌ Auth Error:', authError);
+      throw new Error('Unauthorized: Invalid Token');
+    }
+
     // Parse and validate request
     const { user } = await req.json();
     validateUserProfile(user);
-    
+
     console.log(`📋 Perfil: ${user.daysPerWeek} dias/semana, Nível: ${user.experience || 'Intermediário'}`);
-    
+
     // Build prompt
     const systemPrompt = buildSystemPrompt(user);
-    
+
     // Try Gemini first
     const geminiKey = Deno.env.get('GEMINI_API_KEY');
     if (geminiKey) {
@@ -474,13 +493,13 @@ Deno.serve(async (req) => {
     } else {
       console.warn('⚠️ GEMINI_API_KEY não configurada, pulando para Groq');
     }
-    
+
     // Fallback to Groq
     const groqKey = Deno.env.get('GROQ_API_KEY');
     if (!groqKey) {
       throw new Error('Nenhuma API key configurada (GEMINI_API_KEY ou GROQ_API_KEY)');
     }
-    
+
     const workoutPlan = await generateWithGroq(groqKey, systemPrompt);
     return new Response(JSON.stringify(workoutPlan), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -489,7 +508,7 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('💥 Erro fatal:', error);
-    
+
     return new Response(
       JSON.stringify({
         error: error.message || 'Erro desconhecido',
